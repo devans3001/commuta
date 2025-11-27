@@ -1,8 +1,12 @@
 import type { Route } from "./+types/home";
+
+
 import { Users, UserCircle, Car, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useState } from "react";
+import { calculateMetrics, generateChartData } from "@/lib/mockData";
 import { PageHeader } from "@/components/page-header";
 import { MetricCard } from "@/components/metric-card";
 
@@ -12,25 +16,17 @@ export function meta({}: Route.MetaArgs) {
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
-// Mock data - replace with real API calls
-const mockData = [
-  { date: "Mon", riders: 24, drivers: 13 },
-  { date: "Tue", riders: 32, drivers: 18 },
-  { date: "Wed", riders: 28, drivers: 16 },
-  { date: "Thu", riders: 35, drivers: 21 },
-  { date: "Fri", riders: 42, drivers: 25 },
-  { date: "Sat", riders: 38, drivers: 22 },
-  { date: "Sun", riders: 31, drivers: 19 },
-];
-
-export default function Home() {
+export default function Overview() {
+  const [selectedPeriod, setSelectedPeriod] = useState("7");
+  const metrics = calculateMetrics(Number(selectedPeriod));
+  const chartData = generateChartData(Number(selectedPeriod));
   return (
     <div className="space-y-8">
       <PageHeader 
         title="Overview" 
         description="Platform performance and key metrics"
         action={
-          <Select defaultValue="7">
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
@@ -46,28 +42,28 @@ export default function Home() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Riders"
-          value="1,247"
+          value={metrics.totalRiders.toLocaleString()}
           icon={Users}
           trend={{ value: 12, label: "vs last period" }}
           variant="info"
         />
         <MetricCard
           title="Total Drivers"
-          value="342"
+          value={metrics.totalDrivers.toLocaleString()}
           icon={UserCircle}
           trend={{ value: 8, label: "vs last period" }}
           variant="success"
         />
         <MetricCard
           title="Total Trips"
-          value="3,891"
+          value={metrics.totalTrips.toLocaleString()}
           icon={Car}
           trend={{ value: 15, label: "vs last period" }}
           variant="accent"
         />
         <MetricCard
           title="Forum Users"
-          value="892"
+          value={metrics.totalForumUsers.toLocaleString()}
           icon={MessageSquare}
           trend={{ value: 5, label: "vs last period" }}
           variant="default"
@@ -81,7 +77,7 @@ export default function Home() {
         <CardContent>
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mockData}>
+              <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
