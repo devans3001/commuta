@@ -4,11 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Phone, Building, CreditCard, Calendar } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
+import { useNavigation } from "react-router";
 
 export default function DriverDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
+ 
   // Mock data
   const driver = {
     id: id || "D001",
@@ -84,7 +85,7 @@ export default function DriverDetail() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Earnings</p>
-              <p className="text-2xl font-bold text-accent">{driver.totalEarnings}</p>
+              <p className="text-2xl font-bold text-primary">{driver.totalEarnings}</p>
             </div>
           </CardContent>
         </Card>

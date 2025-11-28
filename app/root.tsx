@@ -8,13 +8,14 @@ import {
 } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
 import type { Route } from "./+types/root";
 import "./app.css";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { Toaster } from "sonner";
 import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
 import { AppSidebar } from "./components/sidebar";
+import { useNavigation } from "react-router";
+import { Spinner } from "@/components/ui/spinner";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -30,8 +31,19 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
-
   const queryClient = new QueryClient();
+  const navigation = useNavigation();
+
+  // Show loader if navigation state is "loading"
+  // if (true) {
+    if (navigation.state === "loading") {
+    return (
+      <div className="flex items-center justify-center h-screen gap-6">
+
+        <Spinner className="size-20" />
+      </div>
+    );
+  }
   return (
     <html lang="en">
       <head>
@@ -41,7 +53,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-           <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <Toaster />
             <SidebarProvider>
@@ -52,14 +64,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <SidebarTrigger />
                   </header>
 
-                  <div className="flex-1 p-6 md:p-8 lg:p-10">
-                    {children}
-                  </div>
+                  <div className="flex-1 p-6 md:p-8 lg:p-10">{children}</div>
                 </main>
               </div>
             </SidebarProvider>
           </TooltipProvider>
-           <ReactQueryDevtools initialIsOpen={false} />
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />

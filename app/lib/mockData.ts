@@ -108,7 +108,7 @@ function randomNumber(min: number, max: number): number {
 export function generateRiders(count: number): Rider[] {
   const riders: Rider[] = [];
   const endDate = new Date();
-  const startDate = new Date(endDate.getTime() - 180 * 24 * 60 * 60 * 1000); // 6 months ago
+  const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000); // 6 months ago
 
   for (let i = 0; i < count; i++) {
     const firstName = randomElement(firstNames);

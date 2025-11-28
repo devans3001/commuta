@@ -71,7 +71,7 @@ export default function RiderDetail() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Trips</p>
-              <p className="text-2xl font-bold text-accent">{rider.totalTrips}</p>
+              <p className="text-2xl font-bold text-primary">{rider.totalTrips}</p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Spent</p>

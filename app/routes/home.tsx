@@ -1,14 +1,29 @@
 import type { Route } from "./+types/home";
 
-
 import { Users, UserCircle, Car, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 import { useState } from "react";
 import { calculateMetrics, generateChartData } from "@/lib/mockData";
 import { PageHeader } from "@/components/page-header";
 import { MetricCard } from "@/components/metric-card";
+import { useNavigation } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,10 +35,18 @@ export default function Overview() {
   const [selectedPeriod, setSelectedPeriod] = useState("7");
   const metrics = calculateMetrics(Number(selectedPeriod));
   const chartData = generateChartData(Number(selectedPeriod));
+
+   const navigation = useNavigation();
+
+
+ // Show loader if navigation state is "loading"
+  if (navigation.state === "loading") {
+    return <div className="text-center p-10">Loading... home</div>;
+  }
   return (
     <div className="space-y-8">
-      <PageHeader 
-        title="Overview" 
+      <PageHeader
+        title="Overview"
         description="Platform performance and key metrics"
         action={
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -78,19 +101,30 @@ export default function Overview() {
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: "hsl(var(--card))", 
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "var(--radius)"
+               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+        <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} />
+        <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "var(--radius)",
                   }}
                 />
                 <Legend />
-                <Bar dataKey="riders" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} name="Riders" />
-                <Bar dataKey="drivers" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} name="Drivers" />
+                <Bar
+                  dataKey="riders"
+                  fill="var(--chart-1)"
+                  radius={[4, 4, 0, 0]}
+                  name="Riders"
+                />
+                <Bar
+                  dataKey="drivers"
+                  fill="var(--chart-2)"
+                  radius={[4, 4, 0, 0]}
+                  name="Drivers"
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -3,39 +3,90 @@ import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Search, LayoutGrid, Table as TableIcon, Download, Eye } from "lucide-react";
+import {
+  Search,
+  LayoutGrid,
+  Table as TableIcon,
+  Download,
+  Eye,
+} from "lucide-react";
 import { useNavigate } from "react-router";
 import { mockDrivers } from "@/lib/mockData";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { isAfter, subHours } from "date-fns";
 
 export default function Drivers() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [selectedPeriod, setSelectedPeriod] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const navigate = useNavigate();
 
   const filteredDrivers = useMemo(() => {
-    return mockDrivers.filter(driver =>
-      driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      driver.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      driver.phone.includes(searchQuery)
-    );
-  }, [searchQuery]);
+    const now = new Date();
 
-  const totalPages = Math.ceil(filteredDrivers.length / itemsPerPage);
-  const paginatedDrivers = filteredDrivers.slice(
+    let result = mockDrivers;
+
+    // 🔥 Filter by selected period
+    if (selectedPeriod === "24") {
+      const last24h = subHours(now, 24);
+      result = result.filter((driver) =>
+        isAfter(new Date(driver.signupDate), last24h)
+      );
+    }
+
+    result = result.filter(
+      (driver) =>
+        driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        driver.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        driver.phone.includes(searchQuery)
+    );
+
+    return result;
+  }, [searchQuery, selectedPeriod]);
+
+  const totalPages = Math.ceil(filteredDrivers?.length / itemsPerPage);
+  const paginatedDrivers = filteredDrivers?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   const handleExport = () => {
     const csv = [
-      ["Driver ID", "Name", "Email", "Phone", "Bank Name", "Account Number", "Total Trips", "Total Earnings"],
-      ...filteredDrivers.map(d => [d.id, d.name, d.email, d.phone, d.bankName, d.accountNumber, d.totalTrips, d.totalEarnings])
-    ].map(row => row.join(",")).join("\n");
-    
+      [
+        "Driver ID",
+        "Name",
+        "Email",
+        "Phone",
+        "Bank Name",
+        "Account Number",
+        "Total Trips",
+        "Total Earnings",
+      ],
+      ...filteredDrivers.map((d) => [
+        d.id,
+        d.name,
+        d.email,
+        d.phone,
+        d.bankName,
+        d.accountNumber,
+        d.totalTrips,
+        d.totalEarnings,
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -46,8 +97,8 @@ export default function Drivers() {
 
   return (
     <div className="space-y-8">
-      <PageHeader 
-        title="Drivers" 
+      <PageHeader
+        title="Drivers"
         description="Manage driver accounts and earnings"
       />
 
@@ -65,7 +116,16 @@ export default function Drivers() {
           />
         </div>
         <div className="flex gap-2">
-          <Button 
+          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Select period" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="24">Last 24 hours</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button
             variant="outline"
             onClick={handleExport}
             disabled={filteredDrivers.length === 0}
@@ -73,10 +133,18 @@ export default function Drivers() {
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setViewMode("cards")}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setViewMode("cards")}
+          >
             <LayoutGrid className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setViewMode("table")}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setViewMode("table")}
+          >
             <TableIcon className="h-4 w-4" />
           </Button>
         </div>
@@ -90,10 +158,14 @@ export default function Drivers() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg">{driver.name}</CardTitle>
-                    <Badge variant="secondary" className="mt-2">{driver.id}</Badge>
+                    <Badge variant="secondary" className="mt-2">
+                      {driver.id}
+                    </Badge>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-success">{driver.totalTrips}</p>
+                    <p className="text-2xl font-bold text-success">
+                      {driver.totalTrips}
+                    </p>
                     <p className="text-xs text-muted-foreground">trips</p>
                   </div>
                 </div>
@@ -111,11 +183,13 @@ export default function Drivers() {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Total Earnings</p>
-                    <p className="text-xl font-bold text-accent">₦{driver.totalEarnings.toLocaleString()}</p>
+                    <p className="text-xl font-bold text-primary">
+                      ₦{driver.totalEarnings.toLocaleString()}
+                    </p>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full mt-4"
                   onClick={() => navigate(`/drivers/${driver.id}`)}
                 >
@@ -146,16 +220,32 @@ export default function Drivers() {
                 <TableBody>
                   {paginatedDrivers.map((driver) => (
                     <TableRow key={driver.id}>
-                      <TableCell><Badge variant="secondary">{driver.id}</Badge></TableCell>
-                      <TableCell className="font-medium">{driver.name}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{driver.id}</Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {driver.name}
+                      </TableCell>
                       <TableCell>{driver.phone}</TableCell>
                       <TableCell>{driver.bankName}</TableCell>
-                      <TableCell><span className="font-mono text-sm">{driver.accountNumber}</span></TableCell>
-                      <TableCell><span className="font-semibold text-success">{driver.totalTrips}</span></TableCell>
-                      <TableCell><span className="font-semibold text-accent">₦{driver.totalEarnings.toLocaleString()}</span></TableCell>
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
+                        <span className="font-mono text-sm">
+                          {driver.accountNumber}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-semibold text-success">
+                          {driver.totalTrips}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="font-semibold text-primary">
+                          ₦{driver.totalEarnings.toLocaleString()}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
                           size="sm"
                           onClick={() => navigate(`/drivers/${driver.id}`)}
                         >
@@ -174,13 +264,15 @@ export default function Drivers() {
       {filteredDrivers.length > itemsPerPage && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredDrivers.length)} of {filteredDrivers.length} drivers
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(currentPage * itemsPerPage, filteredDrivers.length)} of{" "}
+            {filteredDrivers.length} drivers
           </p>
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               Previous
@@ -188,7 +280,7 @@ export default function Drivers() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >
               Next

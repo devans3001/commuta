@@ -17,14 +17,14 @@ interface MetricCardProps {
 export function MetricCard({ title, value, icon: Icon, trend, variant = "default" }: MetricCardProps) {
   const variantStyles = {
     default: "border-border",
-    accent: "border-accent/20 bg-accent/5",
+    accent: "border-accent/20 bg-chart-1/5",
     success: "border-success/20 bg-success/5",
     info: "border-info/20 bg-info/5",
   };
 
   const iconStyles = {
     default: "text-muted-foreground",
-    accent: "text-accent",
+    accent: "text-chart-1",
     success: "text-success",
     info: "text-info",
   };

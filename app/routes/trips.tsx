@@ -136,7 +136,7 @@ export default function Trips() {
                           {trip.paymentStatus}
                         </Badge>
                       </TableCell>
-                      <TableCell className="font-semibold text-accent">₦{trip.driverEarnings.toLocaleString()}</TableCell>
+                      <TableCell className="font-semibold text-primary">₦{trip.driverEarnings.toLocaleString()}</TableCell>
                       <TableCell>{trip.paymentMethod}</TableCell>
                     </TableRow>
                   );
