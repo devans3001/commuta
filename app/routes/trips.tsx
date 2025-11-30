@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Calendar } from "lucide-react";
+import { Search, Calendar, Download } from "lucide-react";
 import { mockTrips } from "@/lib/mockData";
 
 export default function Trips() {
@@ -36,14 +36,52 @@ export default function Trips() {
     currentPage * itemsPerPage
   );
 
+  const handleExport = () => {
+    const csv = [
+      ["Trip ID", "Type", "Date", "Rider Name", "Driver Name", "Status", "Method", "From","To","Fare"],
+      ...filteredTrips.map((r) => [
+        r.id,
+        r.rideType,
+        r.tripDate,
+        r.riderName,
+        r.driverName,
+        r.paymentStatus,
+        r.paymentMethod,
+        r.from,
+        r.to,
+        r.fare
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "trips-export.csv";
+    a.click();
+  };
+
   return (
     <div className="space-y-8">
       <PageHeader 
         title="Trip Log" 
         description="View and manage all ride history"
+        action={
+           <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={filteredTrips.length === 0}
+            className="cursor-pointer"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+        }
       />
 
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -56,6 +94,7 @@ export default function Trips() {
             className="pl-10"
           />
         </div>
+
         <div className="flex gap-2 flex-wrap">
           <Select value={rideTypeFilter} onValueChange={(val) => { setRideTypeFilter(val); setCurrentPage(1); }}>
             <SelectTrigger className="w-[150px]">

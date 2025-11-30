@@ -1,16 +1,37 @@
 import { PageHeader } from "@/components/page-header";
 import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ThumbsUp, MessageCircle, Share2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Search,
+  ThumbsUp,
+  MessageCircle,
+  Share2,
+  Download,
+} from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockForumUsers, mockForumPosts } from "@/lib/mockData";
 
 export default function Forum() {
+  const [activeTab, setActiveTab] = useState("users");
+
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [communityFilter, setCommunityFilter] = useState("all");
@@ -19,8 +40,9 @@ export default function Forum() {
   const itemsPerPage = 20;
 
   const filteredUsers = useMemo(() => {
-    return mockForumUsers.filter(user => {
-      const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    return mockForumUsers.filter((user) => {
+      const matchesSearch =
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRole = roleFilter === "all" || user.role === roleFilter;
       return matchesSearch && matchesRole;
@@ -28,23 +50,106 @@ export default function Forum() {
   }, [searchQuery, roleFilter]);
 
   const filteredPosts = useMemo(() => {
-    return mockForumPosts.filter(post => {
-      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    return mockForumPosts.filter((post) => {
+      const matchesSearch =
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.authorName.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCommunity = communityFilter === "all" || post.communityName === communityFilter;
+      const matchesCommunity =
+        communityFilter === "all" || post.communityName === communityFilter;
       return matchesSearch && matchesCommunity;
     });
   }, [searchQuery, communityFilter]);
 
-  const paginatedUsers = filteredUsers.slice((userPage - 1) * itemsPerPage, userPage * itemsPerPage);
-  const paginatedPosts = filteredPosts.slice((postPage - 1) * itemsPerPage, postPage * itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (userPage - 1) * itemsPerPage,
+    userPage * itemsPerPage
+  );
+  const paginatedPosts = filteredPosts.slice(
+    (postPage - 1) * itemsPerPage,
+    postPage * itemsPerPage
+  );
   const userTotalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const postTotalPages = Math.ceil(filteredPosts.length / itemsPerPage);
 
+  const handleExport = () => {
+    let headers: string[] = [];
+    let rows: any[][] = [];
+    let filename = "";
+
+    if (activeTab === "users") {
+      headers = [
+        "User ID",
+        "Name",
+        "Email",
+        "Phone",
+        "Role",
+        "Communities Joined",
+        "Posts Count",
+        "Signup Date",
+      ];
+
+      rows = filteredUsers.map((user) => [
+        user.id,
+        user.name,
+        user.email,
+        user.phone,
+        user.role,
+        user.communitiesJoined,
+        user.postsCount,
+        user.signupDate,
+      ]);
+
+      filename = "forum-users-export.csv";
+    } else {
+      headers = [
+        "Post ID",
+        "Community",
+        "Title",
+        "Author",
+        "Created Date",
+        "Likes",
+        "Comments",
+        "Shares",
+      ];
+
+      rows = filteredPosts.map((post) => [
+        post.id,
+        post.communityName,
+        post.title,
+        post.authorName,
+        post.createdDate,
+        post.likes,
+        post.comments,
+        post.shares,
+      ]);
+
+      filename = "forum-posts-export.csv";
+    }
+
+    const csv = [headers, ...rows]
+      .map((row) =>
+        row
+          .map((value) =>
+            typeof value === "string" && value.includes(",")
+              ? `"${value}"`
+              : value
+          )
+          .join(",")
+      )
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+  };
+
   return (
     <div className="space-y-8">
-      <PageHeader 
-        title="Forum Activity" 
+      <PageHeader
+        title="Forum Activity"
         description="Monitor community engagement and discussions"
       />
 
@@ -68,7 +173,13 @@ export default function Forum() {
                 className="pl-10"
               />
             </div>
-            <Select value={roleFilter} onValueChange={(val) => { setRoleFilter(val); setUserPage(1); }}>
+            <Select
+              value={roleFilter}
+              onValueChange={(val) => {
+                setRoleFilter(val);
+                setUserPage(1);
+              }}
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
@@ -79,6 +190,17 @@ export default function Forum() {
                 <SelectItem value="Forum-only">Forum-only</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              disabled={
+                filteredUsers.length === 0 || filteredPosts.length === 0
+              }
+              className="cursor-pointer"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
           </div>
 
           <Card>
@@ -99,17 +221,25 @@ export default function Forum() {
                 <TableBody>
                   {paginatedUsers.map((user) => (
                     <TableRow key={user.id}>
-                      <TableCell><Badge variant="outline">{user.id}</Badge></TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{user.id}</Badge>
+                      </TableCell>
                       <TableCell className="font-medium">{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.phone}</TableCell>
                       <TableCell>
-                        <Badge variant={user.role === "Forum-only" ? "secondary" : "default"}>
+                        <Badge
+                          variant={
+                            user.role === "Forum-only" ? "secondary" : "default"
+                          }
+                        >
                           {user.role}
                         </Badge>
                       </TableCell>
                       <TableCell>{user.communitiesJoined}</TableCell>
-                      <TableCell className="text-center">{user.postsCount}</TableCell>
+                      <TableCell className="text-center">
+                        {user.postsCount}
+                      </TableCell>
                       <TableCell>{user.signupDate}</TableCell>
                     </TableRow>
                   ))}
@@ -117,17 +247,19 @@ export default function Forum() {
               </Table>
             </CardContent>
           </Card>
-          
+
           {filteredUsers.length > itemsPerPage && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Showing {(userPage - 1) * itemsPerPage + 1} to {Math.min(userPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} users
+                Showing {(userPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(userPage * itemsPerPage, filteredUsers.length)} of{" "}
+                {filteredUsers.length} users
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setUserPage(p => Math.max(1, p - 1))}
+                  onClick={() => setUserPage((p) => Math.max(1, p - 1))}
                   disabled={userPage === 1}
                 >
                   Previous
@@ -135,7 +267,9 @@ export default function Forum() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setUserPage(p => Math.min(userTotalPages, p + 1))}
+                  onClick={() =>
+                    setUserPage((p) => Math.min(userTotalPages, p + 1))
+                  }
                   disabled={userPage === userTotalPages}
                 >
                   Next
@@ -159,7 +293,13 @@ export default function Forum() {
                 className="pl-10"
               />
             </div>
-            <Select value={communityFilter} onValueChange={(val) => { setCommunityFilter(val); setPostPage(1); }}>
+            <Select
+              value={communityFilter}
+              onValueChange={(val) => {
+                setCommunityFilter(val);
+                setPostPage(1);
+              }}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filter by community" />
               </SelectTrigger>
@@ -171,7 +311,9 @@ export default function Forum() {
                 <SelectItem value="Safety First">Safety First</SelectItem>
                 <SelectItem value="City Routes">City Routes</SelectItem>
                 <SelectItem value="Night Shift">Night Shift</SelectItem>
-                <SelectItem value="Weekend Warriors">Weekend Warriors</SelectItem>
+                <SelectItem value="Weekend Warriors">
+                  Weekend Warriors
+                </SelectItem>
                 <SelectItem value="News & Updates">News & Updates</SelectItem>
               </SelectContent>
             </Select>
@@ -191,18 +333,27 @@ export default function Forum() {
                 </TableHeader>
                 <TableBody>
                   {paginatedPosts.map((post) => (
-                    <TableRow key={post.id} className="cursor-pointer hover:bg-muted/50">
-                      <TableCell><Badge variant="outline">{post.id}</Badge></TableCell>
+                    <TableRow
+                      key={post.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                    >
+                      <TableCell>
+                        <Badge variant="outline">{post.id}</Badge>
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{post.communityName}</Badge>
                       </TableCell>
                       <TableCell>
                         <div>
                           <p className="font-medium">{post.title}</p>
-                          <p className="text-sm text-muted-foreground">by {post.authorName}</p>
+                          <p className="text-sm text-muted-foreground">
+                            by {post.authorName}
+                          </p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{post.createdDate}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {post.createdDate}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-4 text-sm">
                           <span className="flex items-center gap-1 text-muted-foreground">
@@ -229,13 +380,15 @@ export default function Forum() {
           {filteredPosts.length > itemsPerPage && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Showing {(postPage - 1) * itemsPerPage + 1} to {Math.min(postPage * itemsPerPage, filteredPosts.length)} of {filteredPosts.length} posts
+                Showing {(postPage - 1) * itemsPerPage + 1} to{" "}
+                {Math.min(postPage * itemsPerPage, filteredPosts.length)} of{" "}
+                {filteredPosts.length} posts
               </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPostPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPostPage((p) => Math.max(1, p - 1))}
                   disabled={postPage === 1}
                 >
                   Previous
@@ -243,7 +396,9 @@ export default function Forum() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPostPage(p => Math.min(postTotalPages, p + 1))}
+                  onClick={() =>
+                    setPostPage((p) => Math.min(postTotalPages, p + 1))
+                  }
                   disabled={postPage === postTotalPages}
                 >
                   Next

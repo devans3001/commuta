@@ -122,6 +122,7 @@ export default function Riders() {
             variant="outline"
             onClick={handleExport}
             disabled={filteredRiders.length === 0}
+            className="cursor-pointer"
           >
             <Download className="h-4 w-4 mr-2" />
             Export
