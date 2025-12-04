@@ -3,13 +3,18 @@
 export interface Rider {
   id: string;
   name: string;
-  email: string;
-  phone: string;
-  signupDate: string;
-  totalTrips: number;
-  totalSpent: string;
-  status: "Active" | "Inactive";
-  address: string;
+  phoneNumber: string;
+  emailAddress: string;
+  gender: "Male" | "Female";
+  isActive: "1" | "0";
+  isPhoneVerified: "1" | "0";
+  isEmailVerified: "1" | "0";
+  createdAt: string;
+  updatedAt: string;
+  totalRides: number;
+  completedRides: number;
+  cancelledRides: number;
+  averageRating: number;
 }
 
 export interface Driver {
@@ -108,27 +113,35 @@ function randomNumber(min: number, max: number): number {
 export function generateRiders(count: number): Rider[] {
   const riders: Rider[] = [];
   const endDate = new Date();
-  const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000); // 6 months ago
+  const startDate = new Date(endDate.getTime() - 180 * 24 * 60 * 60 * 1000); // 6 months ago
 
   for (let i = 0; i < count; i++) {
     const firstName = randomElement(firstNames);
     const lastName = randomElement(lastNames);
-    const totalTrips = randomNumber(1, 100);
+    const totalRides = randomNumber(0, 100);
+    const completedRides = Math.floor(totalRides * (0.7 + Math.random() * 0.25));
+    const cancelledRides = totalRides - completedRides;
+    const createdAt = randomDateTime(startDate, endDate);
     
     riders.push({
-      id: `R${String(i + 1).padStart(4, '0')}`,
+      id: String(i + 1),
       name: `${firstName} ${lastName}`,
-      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@email.com`,
-      phone: `+234 ${randomNumber(800, 909)} ${randomNumber(100, 999)} ${randomNumber(1000, 9999)}`,
-      signupDate: randomDate(startDate, endDate),
-      totalTrips,
-      totalSpent: `₦${(totalTrips * randomNumber(800, 3000)).toLocaleString()}`,
-      status: Math.random() > 0.1 ? "Active" : "Inactive",
-      address: `${randomElement(cities)}, Nigeria`,
+      phoneNumber: `234${randomNumber(800, 909)}${randomNumber(100, 999)}${randomNumber(1000, 9999)}`,
+      emailAddress: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@email.com`,
+      gender: Math.random() > 0.5 ? "Male" : "Female",
+      isActive: Math.random() > 0.1 ? "1" : "0",
+      isPhoneVerified: Math.random() > 0.2 ? "1" : "0",
+      isEmailVerified: Math.random() > 0.4 ? "1" : "0",
+      createdAt,
+      updatedAt: createdAt,
+      totalRides,
+      completedRides,
+      cancelledRides,
+      averageRating: totalRides > 0 ? Math.round((3 + Math.random() * 2) * 10) / 10 : 0,
     });
   }
 
-  return riders.sort((a, b) => new Date(b.signupDate).getTime() - new Date(a.signupDate).getTime());
+  return riders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export function generateDrivers(count: number): Driver[] {
@@ -290,7 +303,7 @@ export function calculateMetrics(days: number) {
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - days * 24 * 60 * 60 * 1000);
 
-  const ridersInRange = mockRiders.filter(r => new Date(r.signupDate) >= startDate).length;
+  const ridersInRange = mockRiders.filter(r => new Date(r.createdAt) >= startDate).length;
   const driversInRange = mockDrivers.filter(d => new Date(d.signupDate) >= startDate).length;
   const tripsInRange = mockTrips.filter(t => new Date(t.tripDate) >= startDate).length;
   const forumUsersInRange = mockForumUsers.filter(u => new Date(u.signupDate) >= startDate).length;
@@ -312,7 +325,7 @@ export function generateChartData(days: number) {
     const date = new Date(endDate.getTime() - i * 24 * 60 * 60 * 1000);
     const dateStr = date.toISOString().split('T')[0];
     
-    const ridersCount = mockRiders.filter(r => r.signupDate === dateStr).length;
+    const ridersCount = mockRiders.filter(r => r.createdAt.split(' ')[0] === dateStr).length;
     const driversCount = mockDrivers.filter(d => d.signupDate === dateStr).length;
     
     data.push({

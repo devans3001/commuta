@@ -36,10 +36,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   // Show loader if navigation state is "loading"
   // if (true) {
-    if (navigation.state === "loading") {
+  if (navigation.state === "loading") {
     return (
       <div className="flex items-center justify-center h-screen gap-6">
-
         <Spinner className="size-20" />
       </div>
     );
@@ -56,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
             <Toaster />
-            <SidebarProvider>
+            {/* <SidebarProvider>
               <div className="flex min-h-screen w-full">
                 <AppSidebar />
                 <main className="flex-1 flex flex-col">
@@ -64,10 +63,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <SidebarTrigger />
                   </header>
 
-                  <div className="flex-1 p-6 md:p-8 lg:p-10">{children}</div>
-                </main>
-              </div>
-            </SidebarProvider>
+                  <div className="flex-1 p-6 md:p-8 lg:p-10">
+                  </div>
+                  </main>
+                  </div>
+                  </SidebarProvider> */}
+            {children}
           </TooltipProvider>
           <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
