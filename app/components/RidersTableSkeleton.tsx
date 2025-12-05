@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "./ui/skeleton";
 
-export function RidersTableSkeleton() {
+export function RidersTableSkeleton({ show = true }: { show?: boolean }) {
   return (
     <>
       {Array.from({ length: 5 }).map((_, i) => (
@@ -45,17 +45,21 @@ export function RidersTableSkeleton() {
             <Skeleton className="h-5 w-12" />
           </TableCell>
 
-          <TableCell className="hidden md:table-cell">
-            <Skeleton className="h-5 w-10" />
-          </TableCell>
+          {show && (
+            <>
+              <TableCell className="hidden md:table-cell">
+                <Skeleton className="h-5 w-10" />
+              </TableCell>
 
-          <TableCell className="hidden xl:table-cell">
-            <Skeleton className="h-4 w-20" />
-          </TableCell>
+              <TableCell className="hidden xl:table-cell">
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
 
-          <TableCell>
-            <Skeleton className="h-6 w-6 rounded-full" />
-          </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-6 rounded-full" />
+              </TableCell>
+            </>
+          )}
         </TableRow>
       ))}
     </>

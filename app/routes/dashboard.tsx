@@ -20,10 +20,32 @@ import {
   Legend,
 } from "recharts";
 import { useState } from "react";
-import { calculateMetrics, generateChartData } from "@/lib/mockData";
+
+// Mock data functions
+function calculateMetrics(days: number) {
+  return {
+    totalRiders: Math.floor(Math.random() * 5000) + 1000,
+    totalDrivers: Math.floor(Math.random() * 2000) + 500,
+    totalTrips: Math.floor(Math.random() * 10000) + 2000,
+    totalForumUsers: Math.floor(Math.random() * 3000) + 800,
+  };
+}
+
+function generateChartData(days: number) {
+  const data = [];
+  for (let i = 0; i < days; i++) {
+    data.push({
+      date: `Day ${i + 1}`,
+      riders: Math.floor(Math.random() * 500) + 100,
+      drivers: Math.floor(Math.random() * 300) + 50,
+    });
+  }
+  return data;
+}
 import { PageHeader } from "@/components/page-header";
 import { MetricCard } from "@/components/metric-card";
 import { useNavigation } from "react-router";
+import { Spinner } from "@/components/ui/spinner";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -38,8 +60,7 @@ export default function Overview() {
   const metrics = calculateMetrics(Number(selectedPeriod));
   const chartData = generateChartData(Number(selectedPeriod));
 
-   const navigation = useNavigation();
-
+  
 
  // Show loader if navigation state is "loading"
 //   if (navigation.state === "loading") {

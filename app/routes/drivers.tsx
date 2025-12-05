@@ -20,40 +20,47 @@ import {
   Eye,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { mockDrivers } from "@/lib/mockData";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { isAfter, subHours } from "date-fns";
+import DriverCardView from "@/components/DriverCardView";
+import { useDrivers } from "@/hooks/useDriver";
+import DriverTableVIew from "@/components/DriverTableVIew";
+import DriverTableView from "@/components/DriverTableVIew";
 
 export default function Drivers() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selectedPeriod, setSelectedPeriod] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const {data, isLoading} = useDrivers()
+
+  console.log(data,"lol")
   const itemsPerPage = 12;
   const navigate = useNavigate();
 
   const filteredDrivers = useMemo(() => {
     const now = new Date();
 
-    let result = mockDrivers;
+    let result = data || [];
 
     // 🔥 Filter by selected period
     if (selectedPeriod === "24") {
       const last24h = subHours(now, 24);
       result = result.filter((driver) =>
-        isAfter(new Date(driver.signupDate), last24h)
+        isAfter(new Date(driver.createdAt), last24h)
       );
     }
 
     result = result.filter(
       (driver) =>
         driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        driver.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        driver.phone.includes(searchQuery)
+        driver.emailAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        driver.phoneNumber.includes(searchQuery)
     );
 
     return result;
-  }, [searchQuery, selectedPeriod]);
+  }, [searchQuery, selectedPeriod,data]);
 
   const totalPages = Math.ceil(filteredDrivers?.length / itemsPerPage);
   const paginatedDrivers = filteredDrivers?.slice(
@@ -62,30 +69,60 @@ export default function Drivers() {
   );
 
   const handleExport = () => {
-    const csv = [
-      [
-        "Driver ID",
-        "Name",
-        "Email",
-        "Phone",
-        "Bank Name",
-        "Account Number",
-        "Total Trips",
-        "Total Earnings",
-      ],
-      ...filteredDrivers.map((d) => [
-        d.id,
-        d.name,
-        d.email,
-        d.phone,
-        d.bankName,
-        d.accountNumber,
-        d.totalTrips,
-        d.totalEarnings,
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+   const csv = [
+  [
+    "Driver ID",
+    "Name", 
+    "Phone Number",
+    "Email Address",
+    "Gender",
+    "Status",
+    "Phone Verified",
+    "Email Verified",
+    "Vehicle Type",
+    "Vehicle Color", 
+    "License Plate",
+    "Online Status",
+    "Available Status",
+    "Last Online",
+    "Current Latitude",
+    "Current Longitude",
+    "Created At",
+    "Updated At",
+    "Total Rides",
+    "Completed Rides",
+    "Cancelled Rides",
+    "Average Rating",
+    "Total Earnings",
+  ],
+  ...filteredDrivers.map((d) => [
+    d.id,
+    d.name,
+    d.phoneNumber,
+    d.emailAddress,
+    d.gender,
+    d.isActive === "1" ? "Active" : "Inactive",
+    d.isPhoneVerified === "1" ? "Yes" : "No",
+    d.isEmailVerified === "1" ? "Yes" : "No",
+    d.vehicleType,
+    d.vehicleColor,
+    d.licensePlate,
+    d.isOnline === "1" ? "Online" : "Offline",
+    d.isAvailable === "1" ? "Available" : "Unavailable",
+    d.lastOnline,
+    d.currentLat,
+    d.currentLng,
+    d.createdAt,
+    d.updatedAt,
+    d.totalRides,
+    d.completedRides,
+    d.cancelledRides,
+    d.averageRating,
+    d.totalEarnings,
+  ]),
+]
+  .map((row) => row.join(","))
+  .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -151,117 +188,12 @@ export default function Drivers() {
       </div>
 
       {viewMode === "cards" ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {paginatedDrivers.map((driver) => (
-            <Card key={driver.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{driver.name}</CardTitle>
-                    <Badge variant="secondary" className="mt-2">
-                      {driver.id}
-                    </Badge>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-success">
-                      {driver.totalTrips}
-                    </p>
-                    <p className="text-xs text-muted-foreground">trips</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Phone</p>
-                    <p className="font-medium">{driver.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Bank Details</p>
-                    <p className="font-medium">{driver.bankName}</p>
-                    <p className="font-mono text-xs">{driver.accountNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Total Earnings</p>
-                    <p className="text-xl font-bold text-primary">
-                      ₦{driver.totalEarnings.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  className="w-full mt-4"
-                  onClick={() => navigate(`/drivers/${driver.id}`)}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Profile
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <DriverCardView isLoading={isLoading} paginatedDrivers={paginatedDrivers}/>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Driver ID</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Bank Name</TableHead>
-                    <TableHead>Account Number</TableHead>
-                    <TableHead>Total Trips</TableHead>
-                    <TableHead>Total Earnings</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedDrivers.map((driver) => (
-                    <TableRow key={driver.id}>
-                      <TableCell>
-                        <Badge variant="secondary">{driver.id}</Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {driver.name}
-                      </TableCell>
-                      <TableCell>{driver.phone}</TableCell>
-                      <TableCell>{driver.bankName}</TableCell>
-                      <TableCell>
-                        <span className="font-mono text-sm">
-                          {driver.accountNumber}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-success">
-                          {driver.totalTrips}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-primary">
-                          ₦{driver.totalEarnings.toLocaleString()}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/drivers/${driver.id}`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+       <DriverTableView isLoading={isLoading} paginatedDrivers={filteredDrivers}/>
       )}
 
-      {filteredDrivers.length > itemsPerPage && (
+      {filteredDrivers.length > itemsPerPage && viewMode === "cards" && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}

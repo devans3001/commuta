@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 
-function RiderDetailSkeleton() {
+function RiderDetailSkeleton({val}:{val?:string}) {
 
     const navigate = useNavigate();
   return (
@@ -15,7 +15,7 @@ function RiderDetailSkeleton() {
       <div>
         <Button variant="ghost" onClick={() => navigate("/admin/riders")} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Riders
+          Back to {val || "Riders"}
         </Button>
         
         {/* Loading skeletons */}

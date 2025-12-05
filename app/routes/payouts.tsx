@@ -24,21 +24,66 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Download } from "lucide-react";
 import { toast } from "sonner";
-import {
-  mockPayoutDrivers,
-  mockPaymentHistory,
-  type PayoutDriver,
-  type PaymentHistory,
-} from "@/lib/mockData";
+
+
+const mockPayoutDrivers = [
+  {
+    id: "DRV001",
+    name: "Chisom Okafor",
+    bankName: "GTBank",
+    accountNumber: "0123456789",
+    amountOwed: 45000,
+    tripCount: 12,
+    lastTripDate: "2024-01-15",
+  },
+  {
+    id: "DRV002",
+    name: "Ikechukwu Eze",
+    bankName: "Access Bank",
+    accountNumber: "1234567890",
+    amountOwed: 62500,
+    tripCount: 18,
+    lastTripDate: "2024-01-15",
+  },
+  {
+    id: "DRV003",
+    name: "Blessing Adeyemi",
+    bankName: "First Bank",
+    accountNumber: "9876543210",
+    amountOwed: 38000,
+    tripCount: 9,
+    lastTripDate: "2024-01-14",
+  },
+];
+
+const mockPaymentHistory  = [
+  {
+    id: "PH0001",
+    driverName: "Tunde Oluwaseun",
+    amountPaid: 55000,
+    paymentDate: "2024-01-14",
+    reference: "TXN742816",
+    status: "Completed",
+  },
+  {
+    id: "PH0002",
+    driverName: "Amara Okoro",
+    amountPaid: 41500,
+    paymentDate: "2024-01-13",
+    reference: "TXN591243",
+    status: "Completed",
+  },
+];
 
 export default function Payouts() {
   const [val, setVal] = useState("owed");
   const [driversOwed, setDriversOwed] =
-    useState<PayoutDriver[]>(mockPayoutDrivers);
+    useState(mockPayoutDrivers);
   const [paymentHistory, setPaymentHistory] =
-    useState<PaymentHistory[]>(mockPaymentHistory);
+    useState(mockPaymentHistory);
 
   console.log(val);
+
   const handleMarkAsPaid = (driverId: string) => {
     const driver = driversOwed.find((d) => d.id === driverId);
     if (!driver) return;
@@ -47,7 +92,7 @@ export default function Payouts() {
     setDriversOwed((prev) => prev.filter((d) => d.id !== driverId));
 
     // Add to payment history
-    const newPayment: PaymentHistory = {
+    const newPayment = {
       id: `PH${String(paymentHistory.length + 1).padStart(4, "0")}`,
       driverName: driver.name,
       amountPaid: driver.amountOwed,

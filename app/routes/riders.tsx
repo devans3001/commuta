@@ -9,7 +9,6 @@ import {
   Download,
 } from "lucide-react";
 import { useNavigate } from "react-router";
-import { mockRiders } from "@/lib/mockData";
 import { PageHeader } from "@/components/page-header";
 import {
   Select,
@@ -20,8 +19,8 @@ import {
 } from "@/components/ui/select";
 import { isAfter, subHours } from "date-fns";
 import { useRiders } from "@/hooks/useRider";
-import CardView from "@/components/CardView";
-import TableView from "@/components/TableView";
+import CardView from "@/components/RiderCardView";
+import TableView from "@/components/RiderTableView";
 
 export default function Riders() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");

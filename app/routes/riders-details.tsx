@@ -14,26 +14,33 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { PageHeader } from "@/components/page-header";
-import { mockRiders } from "@/lib/mockData";
 import { formatDate, formatPhone } from "@/lib/helper";
 import { useRider } from "@/hooks/useRider";
 import RiderDetailSkeleton from "@/components/RiderDetailSkeleton";
+import type { Rider } from "@/lib/mockData";
 
 export default function RiderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data, isLoading } = useRider(id!);
+  const { data:riders, isLoading } = useRider(id!);
 
-  console.log(data, "rider detail");
+
+  const data:Rider | null = riders ?? null
 
   // Find the rider by ID - adjust property names based on your actual mockData structure
-  const rider = data!;
+  const rider = {
+    ...data,
+    totalRides: 12, // fake data
+    completedRides: 9, // fake data
+    cancelledRides: 3,  // fake data
+    averageRating: 4.5, // fake data
+  };
 
   // Calculate completion rate if we have total rides
-  // const completionRate =
-  //   rider.totalRides > 0
-  //     ? Math.round((rider.completedRides / rider.totalRides) * 100)
-  //     : 0;
+  const completionRate =
+    rider.totalRides > 0
+      ? Math.round((rider.completedRides / rider.totalRides) * 100)
+      : 0;
 
   if (isLoading) {
     return <RiderDetailSkeleton />;

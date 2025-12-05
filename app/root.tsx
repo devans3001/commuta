@@ -32,17 +32,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const queryClient = new QueryClient();
-  const navigation = useNavigation();
 
-  // Show loader if navigation state is "loading"
-  // if (true) {
-  if (navigation.state === "loading") {
-    return (
-      <div className="flex items-center justify-center h-screen gap-6">
-        <Spinner className="size-20" />
-      </div>
-    );
-  }
   return (
     <html lang="en">
       <head>

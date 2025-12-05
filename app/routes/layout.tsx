@@ -1,6 +1,10 @@
-import { Navigate, Outlet } from "react-router";
+import { Navigate, Outlet, useNavigation } from "react-router";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/sidebar";
+import { Spinner } from "@/components/ui/spinner";
+
+import { ClimbingBoxLoader } from "react-spinners";
+import Loading from "@/components/Loader";
 
 export default function Layout() {
   const token = localStorage.getItem("commuta_token");
@@ -8,6 +12,18 @@ export default function Layout() {
     return <Navigate to="/login" replace />;
   }
 
+    const navigation = useNavigation();
+
+  // Show loader if navigation state is "loading"
+  // if (true) {
+  if (navigation.state === "loading") {
+    return (
+      <div className="flex items-center justify-center h-screen gap-6">
+        {/* <ClimbingBoxLoader size={20} /> */}
+        <Loading/>
+      </div>
+    );
+  }
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
