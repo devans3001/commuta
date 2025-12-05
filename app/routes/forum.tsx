@@ -1,5 +1,4 @@
 import { PageHeader } from "@/components/page-header";
-import { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -27,7 +26,114 @@ import {
   Download,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { mockForumUsers, mockForumPosts } from "@/lib/mockData";
+import { useState, useMemo } from "react";
+// Mock data for forum users
+const mockForumUsers = [
+  {
+    id: "U001",
+    name: "Sarah Johnson",
+    email: "sarah.johnson@email.com",
+    phone: "+1-555-0101",
+    role: "Rider",
+    communitiesJoined: 5,
+    postsCount: 24,
+    signupDate: "2023-01-15",
+  },
+  {
+    id: "U002",
+    name: "Mike Chen",
+    email: "mike.chen@email.com",
+    phone: "+1-555-0102",
+    role: "Driver",
+    communitiesJoined: 7,
+    postsCount: 42,
+    signupDate: "2022-11-20",
+  },
+  {
+    id: "U003",
+    name: "Emma Rodriguez",
+    email: "emma.rodriguez@email.com",
+    phone: "+1-555-0103",
+    role: "Forum-only",
+    communitiesJoined: 3,
+    postsCount: 8,
+    signupDate: "2024-02-10",
+  },
+  {
+    id: "U004",
+    name: "James Wilson",
+    email: "james.wilson@email.com",
+    phone: "+1-555-0104",
+    role: "Driver",
+    communitiesJoined: 6,
+    postsCount: 35,
+    signupDate: "2023-03-22",
+  },
+  {
+    id: "U005",
+    name: "Lisa Park",
+    email: "lisa.park@email.com",
+    phone: "+1-555-0105",
+    role: "Rider",
+    communitiesJoined: 4,
+    postsCount: 19,
+    signupDate: "2023-06-18",
+  },
+];
+
+// Mock data for forum posts
+const mockForumPosts = [
+  {
+    id: "P001",
+    communityName: "Riders Hub",
+    title: "Best routes for peak hours",
+    authorName: "Sarah Johnson",
+    createdDate: "2024-01-10",
+    likes: 156,
+    comments: 23,
+    shares: 12,
+  },
+  {
+    id: "P002",
+    communityName: "Driver's Den",
+    title: "Vehicle maintenance tips",
+    authorName: "Mike Chen",
+    createdDate: "2024-01-09",
+    likes: 243,
+    comments: 45,
+    shares: 34,
+  },
+  {
+    id: "P003",
+    communityName: "Tech Talk",
+    title: "App update feedback",
+    authorName: "Emma Rodriguez",
+    createdDate: "2024-01-08",
+    likes: 89,
+    comments: 12,
+    shares: 5,
+  },
+  {
+    id: "P004",
+    communityName: "Safety First",
+    title: "Night driving safety guidelines",
+    authorName: "James Wilson",
+    createdDate: "2024-01-07",
+    likes: 312,
+    comments: 67,
+    shares: 89,
+  },
+  {
+    id: "P005",
+    communityName: "City Routes",
+    title: "Construction updates on Main St",
+    authorName: "Lisa Park",
+    createdDate: "2024-01-06",
+    likes: 178,
+    comments: 34,
+    shares: 21,
+  },
+];
 
 export default function Forum() {
   const [activeTab, setActiveTab] = useState("users");
