@@ -108,3 +108,22 @@ export interface PaymentHistory {
   reference: string;
   status: "Completed" | "Processing";
 }
+
+export interface DashboardData {
+  data: {
+    totalRiders: number;
+    totalDrivers: number;
+    totalRides: number;
+    totalUsers: number;
+    signupTrends: {
+      riders: Array<{
+        week: string;
+        count: number;
+      }>;
+      drivers: Array<{
+        week: string;
+        count: number;
+      }>;
+    };
+  };
+}

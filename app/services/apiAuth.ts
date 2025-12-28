@@ -11,9 +11,11 @@ export interface LoginResponse {
   token: string;
 }
 
+export const API_BASE_URL = "https://api.gocommuta.com/v1/admin";
+
 export async function login(payload: LoginPayload): Promise<LoginResponse> {
   try {
-    const response = await fetch("https://api.gocommuta.com/v1/admin/login", {
+    const response = await fetch(`${API_BASE_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

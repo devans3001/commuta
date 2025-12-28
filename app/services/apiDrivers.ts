@@ -1,4 +1,5 @@
 import type { Driver, Rider, Trip } from "@/lib/mockData";
+import { API_BASE_URL } from "./apiAuth";
 
 
 
@@ -6,7 +7,7 @@ export async function fetchDrivers(): Promise<Driver[]> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
-   const response = await fetch("https://api.gocommuta.com/v1/admin/drivers", {
+   const response = await fetch(`${API_BASE_URL}/drivers`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -31,7 +32,7 @@ export async function fetchDriverById(id: string): Promise<Driver> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
-  const response = await fetch(`https://api.gocommuta.com/v1/admin/drivers/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/drivers/${id}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -54,7 +55,7 @@ export async function fetchTripById(id: string): Promise<Trip> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
-  const response = await fetch(`https://api.gocommuta.com/v1/admin/trips/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/trips/${id}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -78,7 +79,7 @@ export async function fetchTrips(): Promise<Trip[]> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
-   const response = await fetch("https://api.gocommuta.com/v1/admin/trips", {
+   const response = await fetch(`${API_BASE_URL}/trips`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,

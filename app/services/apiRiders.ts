@@ -1,4 +1,5 @@
 import type { Rider } from "@/lib/mockData";
+import { API_BASE_URL } from "./apiAuth";
 
 
 
@@ -6,7 +7,7 @@ export async function fetchRiders(): Promise<Rider[]> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
-   const response = await fetch("https://api.gocommuta.com/v1/admin/riders", {
+   const response = await fetch(`${API_BASE_URL}/riders`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,
@@ -31,7 +32,7 @@ export async function fetchRiderById(id: string): Promise<Rider> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
-  const response = await fetch(`https://api.gocommuta.com/v1/admin/riders/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/riders/${id}`, {
     method: "GET",
     headers: {
       "Authorization": `Bearer ${token}`,

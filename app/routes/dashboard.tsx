@@ -19,17 +19,9 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 // Mock data functions
-function calculateMetrics(days: number) {
-  return {
-    totalRiders: Math.floor(Math.random() * 5000) + 1000,
-    totalDrivers: Math.floor(Math.random() * 2000) + 500,
-    totalTrips: Math.floor(Math.random() * 10000) + 2000,
-    totalForumUsers: Math.floor(Math.random() * 3000) + 800,
-  };
-}
 
 function generateChartData(days: number) {
   const data = [];
@@ -42,10 +34,12 @@ function generateChartData(days: number) {
   }
   return data;
 }
+
 import { PageHeader } from "@/components/page-header";
-import { MetricCard } from "@/components/metric-card";
-import { useNavigation } from "react-router";
-import { Spinner } from "@/components/ui/spinner";
+import { MetricCard, MetricCardSkeleton } from "@/components/metric-card";
+import { useSummary } from "@/hooks/usePayout";
+import { transformSignupData, type SignupTrends } from "@/lib/helper";
+import { ChartSkeleton } from "@/components/chartSkeleton";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -56,16 +50,71 @@ export function meta({}: Route.MetaArgs) {
 export default function Overview() {
   const [selectedPeriod, setSelectedPeriod] = useState("7");
 
-  
+  const { data: summaryData, isLoading: isSummaryLoading } = useSummary();
+
+  // Alternative: Generate chart data based on selected period
+  const generateChartData = useCallback(
+    (days: number, signupTrends?: SignupTrends) => {
+      // If we have backend data, use it
+      if (signupTrends) {
+        const transformedData = transformSignupData(signupTrends);
+
+        // Filter based on selected period if needed
+        // You could implement logic to show last N weeks based on days parameter
+        return transformedData;
+      }
+
+      // Fallback to mock data if no backend data
+      const data = [];
+      const today = new Date();
+
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+
+        data.push({
+          date: date.toLocaleDateString("default", {
+            month: "short",
+            day: "numeric",
+          }),
+          week: `Week ${Math.floor(i / 7) + 1}`, // Fallback week format
+          riders: Math.floor(Math.random() * 500) + 100,
+          drivers: Math.floor(Math.random() * 300) + 50,
+        });
+      }
+
+      return data;
+    },
+    []
+  );
+
+  console.log("summaryData", summaryData);
+
+  const calculateMetrics = useCallback(
+    (days: number) => {
+      return {
+        totalRiders: summaryData?.data.totalRiders ?? 0,
+        totalDrivers: summaryData?.data.totalDrivers ?? 0,
+        totalTrips: summaryData?.data.totalRides ?? 0,
+        totalForumUsers: summaryData?.data.totalUsers ?? 0,
+      };
+    },
+    [summaryData]
+  );
+
   const metrics = calculateMetrics(Number(selectedPeriod));
-  const chartData = generateChartData(Number(selectedPeriod));
 
-  
+  // Generate chart data
+  const chartData = generateChartData(
+    Number(selectedPeriod),
+    summaryData?.data.signupTrends
+  );
+  // const chartData = generateChartData(Number(selectedPeriod));
 
- // Show loader if navigation state is "loading"
-//   if (navigation.state === "loading") {
-//     return <div className="text-center p-10">Loading... home</div>;
-//   }
+  // Show loader if navigation state is "loading"
+  //   if (navigation.state === "loading") {
+  //     return <div className="text-center p-10">Loading... home</div>;
+  //   }
 
   return (
     <div className="space-y-8">
@@ -87,37 +136,50 @@ export default function Overview() {
       />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title="Total Riders"
-          value={metrics.totalRiders.toLocaleString()}
-          icon={Users}
-          trend={{ value: 12, label: "vs last period" }}
-          variant="info"
-        />
-        <MetricCard
-          title="Total Drivers"
-          value={metrics.totalDrivers.toLocaleString()}
-          icon={UserCircle}
-          trend={{ value: 8, label: "vs last period" }}
-          variant="success"
-        />
-        <MetricCard
-          title="Total Trips"
-          value={metrics.totalTrips.toLocaleString()}
-          icon={Car}
-          trend={{ value: 15, label: "vs last period" }}
-          variant="accent"
-        />
-        <MetricCard
-          title="Forum Users"
-          value={metrics.totalForumUsers.toLocaleString()}
-          icon={MessageSquare}
-          trend={{ value: 5, label: "vs last period" }}
-          variant="default"
-        />
+        {isSummaryLoading ? (
+          <>
+            <MetricCardSkeleton variant="info" />
+            <MetricCardSkeleton variant="success" />
+            <MetricCardSkeleton variant="accent" />
+            <MetricCardSkeleton variant="default" />
+          </>
+        ) : (
+          <>
+            <MetricCard
+              title="Total Riders"
+              value={metrics.totalRiders.toLocaleString()}
+              icon={Users}
+              trend={{ value: 12, label: "vs last period" }}
+              variant="info"
+            />
+            <MetricCard
+              title="Total Drivers"
+              value={metrics.totalDrivers.toLocaleString()}
+              icon={UserCircle}
+              trend={{ value: 8, label: "vs last period" }}
+              variant="success"
+            />
+            <MetricCard
+              title="Total Trips"
+              value={metrics.totalTrips.toLocaleString()}
+              icon={Car}
+              trend={{ value: 15, label: "vs last period" }}
+              variant="accent"
+            />
+            <MetricCard
+              title="Forum Users"
+              value={metrics.totalForumUsers.toLocaleString()}
+              icon={MessageSquare}
+              trend={{ value: 5, label: "vs last period" }}
+              variant="default"
+            />
+          </>
+        )}
       </div>
 
-      <Card>
+
+<>
+      {isSummaryLoading ? <ChartSkeleton/>:<Card>
         <CardHeader>
           <CardTitle>Sign-up Trends</CardTitle>
         </CardHeader>
@@ -125,11 +187,21 @@ export default function Overview() {
           <div className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-        <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={12} />
-        <YAxis stroke="var(--muted-foreground)" fontSize={12} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis
+                  dataKey="formattedWeek" // Use formatted week for display
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                />
+                <YAxis
+                  stroke="var(--muted-foreground)"
+                  fontSize={12}
+                  allowDecimals={false}
+                />
 
                 <Tooltip
+                  formatter={(value) => [`${value} signups`, ""]}
+                  labelFormatter={(label) => `Week: ${label}`}
                   contentStyle={{
                     backgroundColor: "var(--card)",
                     border: "1px solid var(--border)",
@@ -153,7 +225,9 @@ export default function Overview() {
             </ResponsiveContainer>
           </div>
         </CardContent>
-      </Card>
+      </Card>}
+</>
+
     </div>
   );
 }
