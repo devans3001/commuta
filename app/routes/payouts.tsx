@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/page-header";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -24,7 +24,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, Download } from "lucide-react";
 import { toast } from "sonner";
-
+import { usePayout, usePayoutHistory } from "@/hooks/usePayout";
+import { format } from "date-fns";
 
 const mockPayoutDrivers = [
   {
@@ -56,7 +57,7 @@ const mockPayoutDrivers = [
   },
 ];
 
-const mockPaymentHistory  = [
+const mockPaymentHistory = [
   {
     id: "PH0001",
     driverName: "Tunde Oluwaseun",
@@ -76,20 +77,36 @@ const mockPaymentHistory  = [
 ];
 
 export default function Payouts() {
-  const [val, setVal] = useState("owed");
-  const [driversOwed, setDriversOwed] =
-    useState(mockPayoutDrivers);
-  const [paymentHistory, setPaymentHistory] =
-    useState(mockPaymentHistory);
+  const { data } = usePayout();
 
-  console.log(val);
+  const {data:payoutHistory} = usePayoutHistory()
+
+  const finalData = useMemo(() => {
+    return data?.map((item) => ({
+      ...item,
+      id: item.driverId,
+      name: item.driverName,
+      bankName: item.bankName,
+      accountNumber: item.accountNumber,
+      amountOwed: item.expectedEarning,
+      tripCount: parseInt(item.trips),
+      lastTripDate: format(item.lastTripDate, "yyyy-MM-dd"),
+    }));
+  }, [data]);
+
+
+  const [val, setVal] = useState("owed");
+  const [driversOwed, setDriversOwed] = useState(finalData);
+  const [paymentHistory, setPaymentHistory] = useState(payoutHistory || []);
+
+  console.log(data);
 
   const handleMarkAsPaid = (driverId: string) => {
-    const driver = driversOwed.find((d) => d.id === driverId);
+    const driver = driversOwed?.find((d) => d.id === driverId);
     if (!driver) return;
 
     // Remove from owed list
-    setDriversOwed((prev) => prev.filter((d) => d.id !== driverId));
+    setDriversOwed((prev) => prev?.filter((d) => d.id !== driverId));
 
     // Add to payment history
     const newPayment = {
@@ -113,7 +130,7 @@ export default function Payouts() {
       val === "owed" ? "drivers-owed-export.csv" : "payment-history-export.csv";
 
     let headers: string[] = [];
-    let rows: any[][] = [];
+    let rows = [];
 
     if (val === "owed") {
       headers = [
@@ -126,7 +143,7 @@ export default function Payouts() {
         "Last Trip Date",
       ];
 
-      rows = driversOwed.map((d) => [
+      rows = driversOwed?.map((d) => [
         d.id,
         d.name,
         d.bankName,
@@ -134,7 +151,7 @@ export default function Payouts() {
         d.amountOwed,
         d.tripCount,
         d.lastTripDate,
-      ]);
+      ]) || [];
     } else {
       headers = [
         "Payment ID",
@@ -158,7 +175,7 @@ export default function Payouts() {
     const csv = [headers, ...rows]
       .map((row) =>
         row
-          .map((value) =>
+          .map((value: string | string[]) =>
             typeof value === "string" && value.includes(",")
               ? `"${value}"` // wrap values containing commas
               : value
@@ -190,7 +207,7 @@ export default function Payouts() {
               onClick={() => setVal("owed")}
               className="cursor-pointer"
             >
-              Drivers Owed ({driversOwed.length})
+              Drivers Owed ({driversOwed?.length || 0})
             </TabsTrigger>
             <TabsTrigger
               value="history"
@@ -203,7 +220,7 @@ export default function Payouts() {
           <Button
             variant="outline"
             onClick={handleExport}
-            disabled={driversOwed.length === 0 || paymentHistory.length === 0}
+            disabled={driversOwed?.length === 0 || paymentHistory.length === 0}
             className="cursor-pointer"
           >
             <Download className="h-4 w-4 mr-2" />
@@ -225,7 +242,7 @@ export default function Payouts() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {driversOwed.map((driver) => (
+                  {driversOwed?.map((driver) => (
                     <TableRow key={driver.id}>
                       <TableCell>
                         <div>
@@ -255,7 +272,6 @@ export default function Payouts() {
                             <Button
                               size="sm"
                               className="bg-success hover:bg-success/90 text-success-foreground cursor-pointer"
-                              
                             >
                               <CheckCircle className="h-4 w-4 mr-2" />
                               Mark as Paid
@@ -276,14 +292,20 @@ export default function Payouts() {
                               <DialogClose asChild>
                                 <Button variant="outline">Cancel</Button>
                               </DialogClose>
-                              <Button type="submit" onClick={() => handleMarkAsPaid(driver.id)} className="cursor-pointer">Complete</Button>
+                              <Button
+                                type="submit"
+                                onClick={() => handleMarkAsPaid(driver.id)}
+                                className="cursor-pointer"
+                              >
+                                Complete
+                              </Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
                       </TableCell>
                     </TableRow>
                   ))}
-                  {driversOwed.length === 0 && (
+                  {driversOwed?.length === 0 && (
                     <TableRow>
                       <TableCell
                         colSpan={6}

@@ -110,20 +110,37 @@ export interface PaymentHistory {
 }
 
 export interface DashboardData {
+  status: number;
+  error: boolean;
+  message: string;
   data: {
-    totalRiders: number;
-    totalDrivers: number;
-    totalRides: number;
-    totalUsers: number;
-    signupTrends: {
-      riders: Array<{
-        week: string;
-        count: number;
-      }>;
-      drivers: Array<{
-        week: string;
-        count: number;
-      }>;
+    metadata: {
+      period: number;
+      periodLabel: string;
     };
+    overview: {
+      riders: {
+        total: number;
+        recent: number;
+      };
+      drivers: {
+        total: number;
+        recent: number;
+      };
+      rides: {
+        total: number;
+        recent: number;
+      };
+      users: {
+        total: number;
+        recent: number;
+      };
+    };
+    trends: Array<{
+      date: string;
+      label: string;
+      riders: number;
+      drivers: number;
+    }>;
   };
 }

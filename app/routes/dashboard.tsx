@@ -21,20 +21,6 @@ import {
 } from "recharts";
 import { useCallback, useState } from "react";
 
-// Mock data functions
-
-function generateChartData(days: number) {
-  const data = [];
-  for (let i = 0; i < days; i++) {
-    data.push({
-      date: `Day ${i + 1}`,
-      riders: Math.floor(Math.random() * 500) + 100,
-      drivers: Math.floor(Math.random() * 300) + 50,
-    });
-  }
-  return data;
-}
-
 import { PageHeader } from "@/components/page-header";
 import { MetricCard, MetricCardSkeleton } from "@/components/metric-card";
 import { useSummary } from "@/hooks/usePayout";
@@ -50,18 +36,38 @@ export function meta({}: Route.MetaArgs) {
 export default function Overview() {
   const [selectedPeriod, setSelectedPeriod] = useState("7");
 
-  const { data: summaryData, isLoading: isSummaryLoading } = useSummary();
+  const { data: summaryData, isLoading: isSummaryLoading } = useSummary(selectedPeriod);
 
-  // Alternative: Generate chart data based on selected period
+  console.table(summaryData)
+
+    // Transform the trends data from backend to match chart format
+  const transformTrendsData = useCallback((trends?: Array<{
+    date: string;
+    label: string;
+    riders: number;
+    drivers: number;
+  }>) => {
+    if (!trends) return [];
+
+    return trends.map(trend => ({
+      date: trend.date,
+      week: trend.label, // Using "label" (e.g., "Mon", "Tue") as week display
+      riders: trend.riders,
+      drivers: trend.drivers,
+    }));
+  }, []);
+
+ // Generate chart data based on selected period
   const generateChartData = useCallback(
-    (days: number, signupTrends?: SignupTrends) => {
-      // If we have backend data, use it
-      if (signupTrends) {
-        const transformedData = transformSignupData(signupTrends);
-
-        // Filter based on selected period if needed
-        // You could implement logic to show last N weeks based on days parameter
-        return transformedData;
+    (days: number, trends?: Array<{
+      date: string;
+      label: string;
+      riders: number;
+      drivers: number;
+    }>) => {
+      // If we have backend data, transform and use it
+      if (trends && trends.length > 0) {
+        return transformTrendsData(trends);
       }
 
       // Fallback to mock data if no backend data
@@ -73,11 +79,8 @@ export default function Overview() {
         date.setDate(date.getDate() - i);
 
         data.push({
-          date: date.toLocaleDateString("default", {
-            month: "short",
-            day: "numeric",
-          }),
-          week: `Week ${Math.floor(i / 7) + 1}`, // Fallback week format
+          date: date.toISOString().split('T')[0], // Format: YYYY-MM-DD
+          week: date.toLocaleDateString("default", { weekday: "short" }), // e.g., "Mon"
           riders: Math.floor(Math.random() * 500) + 100,
           drivers: Math.floor(Math.random() * 300) + 50,
         });
@@ -85,18 +88,18 @@ export default function Overview() {
 
       return data;
     },
-    []
+    [transformTrendsData]
   );
 
-  console.log("summaryData", summaryData);
+  console.log("summaryData",  summaryData);
 
   const calculateMetrics = useCallback(
     (days: number) => {
       return {
-        totalRiders: summaryData?.data.totalRiders ?? 0,
-        totalDrivers: summaryData?.data.totalDrivers ?? 0,
-        totalTrips: summaryData?.data.totalRides ?? 0,
-        totalForumUsers: summaryData?.data.totalUsers ?? 0,
+        totalRiders: summaryData?.data.overview.riders.total ?? 0,
+        totalDrivers: summaryData?.data.overview.drivers.total ?? 0,
+        totalTrips: summaryData?.data.overview.rides.total ?? 0,
+        totalForumUsers: summaryData?.data.overview.users.total ?? 0,
       };
     },
     [summaryData]
@@ -107,7 +110,7 @@ export default function Overview() {
   // Generate chart data
   const chartData = generateChartData(
     Number(selectedPeriod),
-    summaryData?.data.signupTrends
+    summaryData?.data.trends
   );
   // const chartData = generateChartData(Number(selectedPeriod));
 
