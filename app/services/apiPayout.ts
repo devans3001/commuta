@@ -24,6 +24,41 @@ export async function getDriverPayout(): Promise<PayoutDriver[]> {
   return data.data;
 }
 
+export async function markDriverPayout({
+  driverId,
+  rideIds,
+}: {
+  driverId: string;
+  rideIds: number[];
+}): Promise<PayoutDriver[]> {
+  const token = localStorage.getItem("commuta_token");
+  if (!token) throw new Error("Not authenticated");
+
+  const response = await fetch(`${API_BASE_URL}/payout/mark-as-paid`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+    },
+
+    body: JSON.stringify({
+      // Add necessary body parameters if any
+      driverId,
+      rideIds,
+    }),
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => null);
+    throw new Error(err?.message || "Failed to fetch drivers payout");
+  }
+
+  return data.data;
+}
+
 export async function getPayoutHistory(): Promise<PayoutDriver[]> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
@@ -47,8 +82,7 @@ export async function getPayoutHistory(): Promise<PayoutDriver[]> {
   return data.data;
 }
 
-
-export async function getSummary(period:string): Promise<DashboardData> {
+export async function getSummary(period: string): Promise<DashboardData> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 

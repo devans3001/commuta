@@ -98,15 +98,17 @@ export interface PayoutDriver {
   amountOwed: number;
   tripCount: number;
   lastTripDate: string;
+  rideIds: number[];
 }
 
-export interface PaymentHistory {
-  id: string;
+export interface PaymentHistoryType {
+  driverId: string;
   driverName: string;
-  amountPaid: number;
-  paymentDate: string;
-  reference: string;
-  status: "Completed" | "Processing";
+  amount: number;
+  markedAt: string;
+  payoutId:string;
+  payoutReference: string;
+  status: string;
 }
 
 export interface DashboardData {

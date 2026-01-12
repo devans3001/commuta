@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/page-header";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -22,64 +22,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, Download } from "lucide-react";
+import { CheckCircle, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { usePayout, usePayoutHistory } from "@/hooks/usePayout";
+import { useMarkPayment, usePayout, usePayoutHistory } from "@/hooks/usePayout";
 import { format } from "date-fns";
+import type { PaymentHistoryType, PayoutDriver } from "@/lib/mockData";
 
-const mockPayoutDrivers = [
-  {
-    id: "DRV001",
-    name: "Chisom Okafor",
-    bankName: "GTBank",
-    accountNumber: "0123456789",
-    amountOwed: 45000,
-    tripCount: 12,
-    lastTripDate: "2024-01-15",
-  },
-  {
-    id: "DRV002",
-    name: "Ikechukwu Eze",
-    bankName: "Access Bank",
-    accountNumber: "1234567890",
-    amountOwed: 62500,
-    tripCount: 18,
-    lastTripDate: "2024-01-15",
-  },
-  {
-    id: "DRV003",
-    name: "Blessing Adeyemi",
-    bankName: "First Bank",
-    accountNumber: "9876543210",
-    amountOwed: 38000,
-    tripCount: 9,
-    lastTripDate: "2024-01-14",
-  },
-];
-
-const mockPaymentHistory = [
-  {
-    id: "PH0001",
-    driverName: "Tunde Oluwaseun",
-    amountPaid: 55000,
-    paymentDate: "2024-01-14",
-    reference: "TXN742816",
-    status: "Completed",
-  },
-  {
-    id: "PH0002",
-    driverName: "Amara Okoro",
-    amountPaid: 41500,
-    paymentDate: "2024-01-13",
-    reference: "TXN591243",
-    status: "Completed",
-  },
-];
-
-export default function Payouts() {
+export default function Payouts({
+  onCloseModal,
+}: {
+  onCloseModal?: () => void;
+}) {
   const { data } = usePayout();
 
-  const {data:payoutHistory} = usePayoutHistory()
+  const { data: historyData } = usePayoutHistory();
+  const { mutate, isPending } = useMarkPayment();
 
   const finalData = useMemo(() => {
     return data?.map((item) => ({
@@ -91,37 +48,43 @@ export default function Payouts() {
       amountOwed: item.expectedEarning,
       tripCount: parseInt(item.trips),
       lastTripDate: format(item.lastTripDate, "yyyy-MM-dd"),
+      rideIds: item.rideIds,
     }));
   }, [data]);
 
+  useEffect(() => {
+    if (finalData) {
+      setDriversOwed(finalData);
+    }
+  }, [finalData]);
+
+  useEffect(() => {
+    if (historyData) {
+      setPaymentHistory(historyData);
+    }
+  }, [historyData]);
 
   const [val, setVal] = useState("owed");
-  const [driversOwed, setDriversOwed] = useState(finalData);
-  const [paymentHistory, setPaymentHistory] = useState(payoutHistory || []);
+  const [driversOwed, setDriversOwed] = useState<PayoutDriver[]>([]);
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryType[]>(
+    []
+  );
 
-  console.log(data);
+  console.log(historyData, "payoutHistory");
 
-  const handleMarkAsPaid = (driverId: string) => {
-    const driver = driversOwed?.find((d) => d.id === driverId);
-    if (!driver) return;
+  const handleMarkAsPaid = (driver: PayoutDriver) => {
+    const { id: driverId, rideIds } = driver;
 
-    // Remove from owed list
-    setDriversOwed((prev) => prev?.filter((d) => d.id !== driverId));
-
-    // Add to payment history
-    const newPayment = {
-      id: `PH${String(paymentHistory.length + 1).padStart(4, "0")}`,
-      driverName: driver.name,
-      amountPaid: driver.amountOwed,
-      paymentDate: new Date().toISOString().split("T")[0],
-      reference: `TXN${Math.floor(Math.random() * 900000) + 100000}`,
-      status: "Completed",
-    };
-
-    setPaymentHistory((prev) => [newPayment, ...prev]);
-
-    toast.success(
-      `Payment of ₦${driver.amountOwed.toLocaleString()} marked as completed for ${driver.name}`
+    mutate(
+      { driverId, rideIds },
+      {
+        onSuccess: () => {
+          onCloseModal;
+          toast.success(
+            `Payment of ₦${driver.amountOwed.toLocaleString()} marked as completed for ${driver.name}`
+          );
+        },
+      }
     );
   };
 
@@ -143,15 +106,16 @@ export default function Payouts() {
         "Last Trip Date",
       ];
 
-      rows = driversOwed?.map((d) => [
-        d.id,
-        d.name,
-        d.bankName,
-        d.accountNumber,
-        d.amountOwed,
-        d.tripCount,
-        d.lastTripDate,
-      ]) || [];
+      rows =
+        driversOwed?.map((d) => [
+          d.id,
+          d.name,
+          d.bankName,
+          d.accountNumber,
+          d.amountOwed,
+          d.tripCount,
+          d.lastTripDate,
+        ]) || [];
     } else {
       headers = [
         "Payment ID",
@@ -163,11 +127,11 @@ export default function Payouts() {
       ];
 
       rows = paymentHistory.map((p) => [
-        p.id,
+        p.driverId,
         p.driverName,
-        p.amountPaid,
-        p.paymentDate,
-        p.reference,
+        p.amount,
+        p.markedAt,
+        p.payoutReference,
         p.status,
       ]);
     }
@@ -175,11 +139,10 @@ export default function Payouts() {
     const csv = [headers, ...rows]
       .map((row) =>
         row
-          .map((value: string | string[]) =>
-            typeof value === "string" && value.includes(",")
-              ? `"${value}"` // wrap values containing commas
-              : value
-          )
+          .map((value: string | number | string[]) => {
+            const stringValue = String(value);
+            return stringValue.includes(",") ? `"${stringValue}"` : stringValue;
+          })
           .join(",")
       )
       .join("\n");
@@ -214,7 +177,7 @@ export default function Payouts() {
               onClick={() => setVal("history")}
               className="cursor-pointer"
             >
-              Payment History
+              Payment History ({paymentHistory?.length || 0})
             </TabsTrigger>
           </TabsList>
           <Button
@@ -273,8 +236,8 @@ export default function Payouts() {
                               size="sm"
                               className="bg-success hover:bg-success/90 text-success-foreground cursor-pointer"
                             >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Mark as Paid
+                              <CheckCircle className="h-4 w-4 mr-2" /> Mark as
+                              completed
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
@@ -294,10 +257,15 @@ export default function Payouts() {
                               </DialogClose>
                               <Button
                                 type="submit"
-                                onClick={() => handleMarkAsPaid(driver.id)}
+                                onClick={() => handleMarkAsPaid(driver)}
+                                disabled={isPending}
                                 className="cursor-pointer"
                               >
-                                Complete
+                                {isPending ? (
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                ) : (
+                                  "Complete"
+                                )}
                               </Button>
                             </DialogFooter>
                           </DialogContent>
@@ -336,17 +304,19 @@ export default function Payouts() {
                 </TableHeader>
                 <TableBody>
                   {paymentHistory.map((payment) => (
-                    <TableRow key={payment.id}>
+                    <TableRow key={payment.driverId}>
                       <TableCell>
                         <p className="font-medium">{payment.driverName}</p>
                       </TableCell>
                       <TableCell className="text-lg font-bold">
-                        ₦{payment.amountPaid.toLocaleString()}
+                        ₦{payment.amount.toLocaleString()}
                       </TableCell>
-                      <TableCell>{payment.paymentDate}</TableCell>
+                      <TableCell>
+                        {format(payment.markedAt, "MMM dd, yyyy")}
+                      </TableCell>
                       <TableCell>
                         <span className="font-mono text-sm">
-                          {payment.reference}
+                          {payment.payoutReference}
                         </span>
                       </TableCell>
                       <TableCell>
