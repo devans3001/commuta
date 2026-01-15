@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 import { CheckCircle, Eye, Star, XCircle } from "lucide-react";
 import { RiderCardSkeleton } from "./RiderCardSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import type { Rider } from "@/lib/mockData";
+import type { Rider } from "@/lib/type";
 import { Badge } from "./ui/badge";
 import { formatDate, formatPhone } from "@/lib/helper";
 import { useNavigate } from "react-router";

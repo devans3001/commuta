@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, Calendar, MapPin } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { PageHeader } from "@/components/page-header";
-import { mockRiders } from "@/lib/mockData";
+import { mockRiders } from "@/lib/type";
 
 export default function RiderDetail() {
   const { id } = useParams();

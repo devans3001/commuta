@@ -69,25 +69,30 @@ createdAt:string;
 
 
 export interface ForumUser {
-  id: string;
+  userId: string;
   name: string;
-  email: string;
-  phone: string;
-  role: "Rider" | "Driver" | "Forum-only";
-  communitiesJoined: number;
-  postsCount: number;
-  signupDate: string;
+  emailAddress: string;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  totalCommunities: number;
+  totalPosts: number;
+  createdAt: string;
+  verifiedAt: string | null;
 }
 
-export interface ForumPost {
+export interface ForumActivity {
   id: string;
-  communityName: string;
+  postId: string;
+  postTitle: string;
+  postBody: boolean;
+  postImage: string;
+  likesCount: number;
+  commentsCount: number;
+  communityId: string | null;
+  communityName: string | null;
   authorName: string;
-  createdDate: string;
-  likes: number;
-  comments: number;
-  shares: number;
-  title: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PayoutDriver {

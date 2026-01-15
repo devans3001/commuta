@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { formatDate, formatPhone } from "@/lib/helper";
-import type { Driver } from "@/lib/mockData"; // Assuming you have a Driver type
+import type { Driver } from "@/lib/type"; // Assuming you have a Driver type
 import { RiderCardSkeleton } from "./RiderCardSkeleton";
 
 function DriverCardView({

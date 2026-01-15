@@ -27,7 +27,7 @@ import {
   Shield,
 } from "lucide-react";
 import { useTrip } from "@/hooks/useDriver";
-import type { Trip } from "@/lib/mockData";
+import type { Trip } from "@/lib/type";
 
 
 // Status configuration

@@ -25,7 +25,7 @@ import { useNavigate, useParams } from "react-router";
 import { formatDate, formatPhone } from "@/lib/helper";
 import { useDriver } from "@/hooks/useDriver";
 import RiderDetailSkeleton from "@/components/RiderDetailSkeleton";
-import type { Driver } from "@/lib/mockData";
+import type { Driver } from "@/lib/type";
 
 export default function DriverDetail() {
   const { id } = useParams();

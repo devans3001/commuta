@@ -1,4 +1,4 @@
-import type { Driver, Rider, Trip } from "@/lib/mockData";
+import type { Driver, Rider, Trip } from "@/lib/type";
 import { API_BASE_URL } from "./apiAuth";
 
 

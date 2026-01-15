@@ -1,4 +1,4 @@
-import type { Rider } from "@/lib/mockData";
+import type { Rider } from "@/lib/type";
 import { fetchRiderById, fetchRiders } from "@/services/apiRiders";
 import { useQuery } from "@tanstack/react-query";
 

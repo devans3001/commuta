@@ -17,7 +17,7 @@ import { PageHeader } from "@/components/page-header";
 import { formatDate, formatPhone } from "@/lib/helper";
 import { useRider } from "@/hooks/useRider";
 import RiderDetailSkeleton from "@/components/RiderDetailSkeleton";
-import type { Rider } from "@/lib/mockData";
+import type { Rider } from "@/lib/type";
 
 export default function RiderDetail() {
   const { id } = useParams();

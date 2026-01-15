@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RidersTableSkeleton } from "@/components/RidersTableSkeleton";
-import type { Rider } from '@/lib/mockData';
+import type { Rider } from '@/lib/type';
 import { CheckCircle, Eye, Star } from 'lucide-react';
 import { formatDate, formatPhone } from '@/lib/helper';
 import { Button } from './ui/button';

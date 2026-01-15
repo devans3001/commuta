@@ -1,4 +1,4 @@
-import type { DashboardData, PayoutDriver } from "@/lib/mockData";
+import type { DashboardData, PayoutDriver } from "@/lib/type";
 import { getDriverPayout, getPayoutHistory, getSummary, markDriverPayout } from "@/services/apiPayout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 

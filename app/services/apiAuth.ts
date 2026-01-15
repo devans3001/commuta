@@ -1,4 +1,3 @@
-// src/lib/api/auth.ts
 export interface LoginPayload {
   emailAddress: string;
   password: string;

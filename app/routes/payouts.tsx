@@ -26,7 +26,9 @@ import { CheckCircle, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useMarkPayment, usePayout, usePayoutHistory } from "@/hooks/usePayout";
 import { format } from "date-fns";
-import type { PaymentHistoryType, PayoutDriver } from "@/lib/mockData";
+import type { PaymentHistoryType, PayoutDriver } from "@/lib/type";
+import PayoutOwed from "@/components/PayoutOwed";
+import PayoutHistory from "@/components/PayoutHistory";
 
 export default function Payouts({
   onCloseModal,
@@ -190,147 +192,12 @@ export default function Payouts({
             Export
           </Button>
         </div>
-        <TabsContent value="owed">
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Driver</TableHead>
-                    <TableHead>Bank Details</TableHead>
-                    <TableHead>Amount Owed</TableHead>
-                    <TableHead>Trips</TableHead>
-                    <TableHead>Last Trip</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {driversOwed?.map((driver) => (
-                    <TableRow key={driver.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{driver.name}</p>
-                          <Badge variant="secondary" className="mt-1">
-                            {driver.id}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{driver.bankName}</p>
-                          <p className="text-sm font-mono text-muted-foreground">
-                            {driver.accountNumber}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-lg font-bold text-chart-1">
-                        ₦{driver.amountOwed.toLocaleString()}
-                      </TableCell>
-                      <TableCell>{driver.tripCount} trips</TableCell>
-                      <TableCell>{driver.lastTripDate}</TableCell>
-                      <TableCell>
-                        <Dialog>
-                          <DialogTrigger>
-                            {" "}
-                            <Button
-                              size="sm"
-                              className="bg-success hover:bg-success/90 text-success-foreground cursor-pointer"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" /> Mark as
-                              completed
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Confirm Mark as Paid</DialogTitle>
-                              <DialogDescription>
-                                Are you sure you want to mark the payment of{" "}
-                                <strong>
-                                  ₦{driver.amountOwed.toLocaleString()}
-                                </strong>{" "}
-                                to <strong>{driver.name}</strong> as completed?
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <DialogClose asChild>
-                                <Button variant="outline">Cancel</Button>
-                              </DialogClose>
-                              <Button
-                                type="submit"
-                                onClick={() => handleMarkAsPaid(driver)}
-                                disabled={isPending}
-                                className="cursor-pointer"
-                              >
-                                {isPending ? (
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                ) : (
-                                  "Complete"
-                                )}
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {driversOwed?.length === 0 && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center text-muted-foreground py-8"
-                      >
-                        No pending payouts
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
-        <TabsContent value="history">
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Driver</TableHead>
-                    <TableHead>Amount Paid</TableHead>
-                    <TableHead>Payment Date</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paymentHistory.map((payment) => (
-                    <TableRow key={payment.driverId}>
-                      <TableCell>
-                        <p className="font-medium">{payment.driverName}</p>
-                      </TableCell>
-                      <TableCell className="text-lg font-bold">
-                        ₦{payment.amount.toLocaleString()}
-                      </TableCell>
-                      <TableCell>
-                        {format(payment.markedAt, "MMM dd, yyyy")}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-sm">
-                          {payment.payoutReference}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className="bg-success text-success-foreground">
-                          {payment.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
+     <PayoutOwed driversOwed={driversOwed} handleMarkAsPaid={handleMarkAsPaid} isPending={isPending}/>
+
+     <PayoutHistory paymentHistory={paymentHistory}/>
+
+      
       </Tabs>
     </div>
   );

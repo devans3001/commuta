@@ -1,4 +1,4 @@
-import type { DashboardData, PayoutDriver } from "@/lib/mockData";
+import type { DashboardData, PayoutDriver } from "@/lib/type";
 import { API_BASE_URL } from "./apiAuth";
 
 export async function getDriverPayout(): Promise<PayoutDriver[]> {

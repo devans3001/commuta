@@ -1,4 +1,4 @@
-import type { Driver, Trip as Trips } from "@/lib/mockData";
+import type { Driver, Trip as Trips } from "@/lib/type";
 import { fetchDriverById, fetchDrivers, fetchTripById, fetchTrips } from "@/services/apiDrivers";
 import { fetchRiderById, fetchRiders } from "@/services/apiRiders";
 import { useQuery } from "@tanstack/react-query";
