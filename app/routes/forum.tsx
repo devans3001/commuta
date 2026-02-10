@@ -74,7 +74,7 @@ export default function Forum() {
   const userTotalPages = Math.ceil((filteredUsers?.length ?? 0) / itemsPerPage);
   const postTotalPages = Math.ceil((filteredPosts?.length ?? 0) / itemsPerPage);
 
-  console.log(paginatedPosts, filteredPosts, forumActivity, "forumActivity");
+//   console.log(paginatedPosts, filteredPosts, forumActivity, "forumActivity");
 
   const handleExport = () => {
     let headers: string[] = [];
@@ -131,7 +131,7 @@ export default function Forum() {
 
       filename = "forum-posts-export.csv";
     }
-    console.log(forumActivity, "forumActivity");
+//     console.log(forumActivity, "forumActivity");
 
     const csv = [headers, ...rows]
       .map((row) =>

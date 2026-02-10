@@ -39,7 +39,7 @@ const Login = () => {
       { emailAddress: email, password },
       {
         onSuccess: (data) => {
-          console.log("Logged in:", data);
+//           console.log("Logged in:", data);
           toast.success("Login successful!");
           // redirect user
           navigate("/admin/dashboard");

@@ -91,7 +91,7 @@ export default function Overview() {
     [transformTrendsData]
   );
 
-  console.log("summaryData",  summaryData);
+  // console.log("summaryData",  summaryData);
 
   const calculateMetrics = useCallback(
     (days: number) => {

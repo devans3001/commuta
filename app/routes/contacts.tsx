@@ -1,14 +1,17 @@
+
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
 import {
   Search,
   LayoutGrid,
   Table as TableIcon,
   Download,
+  Mail,
+  Phone,
+  User,
+  Calendar,
 } from "lucide-react";
-import { useNavigate } from "react-router";
 import { PageHeader } from "@/components/page-header";
 import {
   Select,
@@ -18,82 +21,86 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { isAfter, subHours } from "date-fns";
-import { useRiders } from "@/hooks/useRider";
-import CardView from "@/components/RiderCardView";
-import TableView from "@/components/RiderTableView";
 
-export default function Riders() {
+import { useContacts } from "@/hooks/useContacts";
+import ContactsCardView from "@/components/ContactsCardView";
+import ContactsTableView from "@/components/ContactsTableView";
+
+export default function Contacts() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const navigate = useNavigate();
 
-  const { data: riders, isLoading, error } = useRiders();
+  const { data: contacts, isLoading, error } = useContacts();
+
+//   console.log(contacts, "contacts");
 
   const [selectedPeriod, setSelectedPeriod] = useState("all");
-  const filteredRiders = useMemo(() => {
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const filteredContacts = useMemo(() => {
     const now = new Date();
 
-    let result = riders || [];
+    let result = contacts || [];
 
-    // 🔥 Filter by selected period
+    // Filter by selected period
     if (selectedPeriod === "24") {
       const last24h = subHours(now, 24);
-      result = result.filter((rider) =>
-        isAfter(new Date(rider.createdAt), last24h)
+      result = result.filter((contact) =>
+        isAfter(new Date(contact.createdAt), last24h)
       );
     }
 
+    // Filter by category
+    if (selectedCategory !== "all") {
+      result = result.filter((contact) => contact.category === selectedCategory);
+    }
+
+    // Search filter
     result = result.filter(
-      (rider) =>
-        rider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rider.emailAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rider.phoneNumber.includes(searchQuery)
+      (contact) =>
+        contact.firstName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.lastName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        contact.phoneNumber?.includes(searchQuery) ||
+        contact.message?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return result;
-  }, [searchQuery, selectedPeriod, riders]);
+  }, [searchQuery, selectedPeriod, selectedCategory, contacts]);
 
-  const totalPages = Math.ceil(filteredRiders.length / itemsPerPage);
-  const paginatedRiders = filteredRiders.slice(
+  const totalPages = Math.ceil(filteredContacts.length / itemsPerPage);
+  const paginatedContacts = filteredContacts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
-
-//   console.log(riders, paginatedRiders, filteredRiders, "ride");
 
   const handleExport = () => {
     const csv = [
       [
         "ID",
-        "Name",
+        "First Name",
+        "Last Name",
         "Email",
         "Phone",
-        "Gender",
-        "Status",
-        "Phone Verified",
-        "Email Verified",
+        "Alt Phone",
+        "Alt Email",
+        "Category",
+        "Message",
         "Created At",
-        "Total Rides",
-        "Completed",
-        "Cancelled",
-        "Rating",
       ],
-      ...filteredRiders.map((r) => [
-        r.id,
-        r.name,
-        r.emailAddress,
-        r.phoneNumber,
-        r.gender,
-        r.isActive === "1" ? "Active" : "Inactive",
-        r.isPhoneVerified === "1" ? "Yes" : "No",
-        r.isEmailVerified === "1" ? "Yes" : "No",
-        r.createdAt,
-        r.totalRides,
-        r.completedRides,
-        r.cancelledRides,
-        r.averageRating,
+      ...filteredContacts.map((contact) => [
+        contact.id,
+        contact.firstName,
+        contact.lastName,
+        contact.email,
+        contact.phoneNumber,
+        contact.altPhoneNumber || "",
+        contact.altEmail || "",
+        contact.category || "",
+        contact.message,
+        contact.createdAt,
       ]),
     ]
       .map((row) => row.join(","))
@@ -103,21 +110,33 @@ export default function Riders() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "riders-export.csv";
+    a.download = "contacts-export.csv";
     a.click();
   };
 
-
+  // Extract unique categories for filter
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set<string>();
+    contacts?.forEach((contact) => {
+      if (contact.category) {
+        uniqueCategories.add(contact.category);
+      }
+    });
+    return ["all", ...Array.from(uniqueCategories)];
+  }, [contacts]);
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Riders" description="Manage and view rider accounts" />
+      <PageHeader 
+        title="Contacts" 
+        description="View and manage contact submissions" 
+      />
 
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, email, or phone..."
+            placeholder="Search by name, email, phone, or message..."
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
@@ -129,17 +148,31 @@ export default function Riders() {
         <div className="flex gap-2">
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Select period" />
+              <SelectValue placeholder="Period" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="24">Last 24 hours</SelectItem>
             </SelectContent>
           </Select>
+          
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category === "all" ? "All Categories" : category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Button
             variant="outline"
             onClick={handleExport}
-            disabled={filteredRiders.length === 0}
+            disabled={filteredContacts.length === 0}
             className="cursor-pointer"
           >
             <Download className="h-4 w-4 mr-2" />
@@ -158,7 +191,6 @@ export default function Riders() {
             size="icon"
             onClick={() => setViewMode("table")}
             className="cursor-pointer"
-
           >
             <TableIcon className="h-4 w-4" />
           </Button>
@@ -166,17 +198,17 @@ export default function Riders() {
       </div>
 
       {viewMode === "cards" ? (
-        <CardView isLoading={isLoading} paginatedRiders={paginatedRiders}/>
+        <ContactsCardView isLoading={isLoading} paginatedContacts={paginatedContacts} />
       ) : (
-       <TableView isLoading={isLoading} paginatedRiders={filteredRiders}/>
+        <ContactsTableView isLoading={isLoading} paginatedContacts={filteredContacts} />
       )}
 
-      {filteredRiders.length > itemsPerPage && (
+      {filteredContacts.length > itemsPerPage && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, filteredRiders.length)} of{" "}
-            {filteredRiders.length} riders
+            {Math.min(currentPage * itemsPerPage, filteredContacts.length)} of{" "}
+            {filteredContacts.length} contacts
           </p>
           <div className="flex gap-2">
             <Button

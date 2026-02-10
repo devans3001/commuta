@@ -151,3 +151,17 @@ export interface DashboardData {
     }>;
   };
 }
+
+export interface Contact {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  email: string;
+  category: string;
+  altPhoneNumber: string | null;
+  altEmail: string | null;
+  message: string;
+  createdAt: string;
+  updatedAt: string;
+}

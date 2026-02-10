@@ -18,5 +18,6 @@ export default [
     route("admin/trips/:rideId", "routes/trip-details.tsx"),
     route("admin/forum", "routes/forum.tsx"),
     route("admin/payouts", "routes/payouts.tsx"),
+    route("admin/contacts", "routes/contacts.tsx"),
   ]),
 ] satisfies RouteConfig;

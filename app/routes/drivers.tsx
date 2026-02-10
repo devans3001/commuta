@@ -35,7 +35,7 @@ export default function Drivers() {
 
   const {data, isLoading} = useDrivers()
 
-  console.log(data,"lol")
+//   console.log(data,"lol")
   const itemsPerPage = 12;
   const navigate = useNavigate();
 

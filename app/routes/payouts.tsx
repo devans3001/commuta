@@ -72,7 +72,7 @@ export default function Payouts({
     []
   );
 
-  console.log(historyData, "payoutHistory");
+//   console.log(historyData, "payoutHistory");
 
   const handleMarkAsPaid = (driver: PayoutDriver) => {
     const { id: driverId, rideIds } = driver;

@@ -6,6 +6,7 @@ import {
   MessageSquare,
   UserCircle,
   LogOut,
+  Contact
 } from "lucide-react";
 
 import {
@@ -31,6 +32,7 @@ const mainItems = [
   { title: "Trip Log", url: "/admin/trips", icon: Car },
   { title: "Driver Payouts", url: "/admin/payouts", icon: DollarSign },
   { title: "Forum Activity", url: "/admin/forum", icon: MessageSquare },
+  { title: "Contacts", url: "/admin/contacts", icon: Contact },
 ];
 
 export function AppSidebar() {
