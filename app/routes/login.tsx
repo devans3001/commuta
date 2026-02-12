@@ -28,8 +28,9 @@ const Login = () => {
 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("john@example.com");
-  const [password, setPassword] = useState("P@$$w0rd123");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { mutate, isPending } = useLogin();
 
   async function handleSubmit(e: React.FormEvent) {
