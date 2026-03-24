@@ -29,6 +29,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
+  //  you can find login details in the env file
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { mutate, isPending } = useLogin();
