@@ -1,13 +1,4 @@
 import { PageHeader } from "@/components/page-header";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,9 +28,10 @@ export default function Forum() {
   const [activeTab, setActiveTab] = useState("users");
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [status, setStatus] = useState("all");
   const [userPage, setUserPage] = useState(1);
   const [postPage, setPostPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 10;
 
   const { data: forumUser, isLoading: isPending } = useForumUser();
   const { data: forumActivity, isLoading } = useForumActivity();
@@ -49,9 +41,15 @@ export default function Forum() {
       const matchesSearch =
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.emailAddress.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesSearch;
-    });
-  }, [searchQuery, forumUser]);
+
+      const matchesStatus =
+        status === "all" ||
+        (status === "active" && user.isActive) ||
+        (status === "inactive" && !user.isActive);
+
+      return matchesSearch && matchesStatus;
+    }).sort((a,b)=>(a.name.localeCompare(b.name)));
+  }, [searchQuery, status, forumUser]);
 
   const filteredPosts = useMemo(() => {
     return forumActivity?.filter((post) => {
@@ -65,16 +63,16 @@ export default function Forum() {
 
   const paginatedUsers = filteredUsers?.slice(
     (userPage - 1) * itemsPerPage,
-    userPage * itemsPerPage
+    userPage * itemsPerPage,
   );
   const paginatedPosts = filteredPosts?.slice(
     (postPage - 1) * itemsPerPage,
-    postPage * itemsPerPage
+    postPage * itemsPerPage,
   );
   const userTotalPages = Math.ceil((filteredUsers?.length ?? 0) / itemsPerPage);
   const postTotalPages = Math.ceil((filteredPosts?.length ?? 0) / itemsPerPage);
 
-//   console.log(paginatedPosts, filteredPosts, forumActivity, "forumActivity");
+  //   console.log(paginatedPosts, filteredPosts, forumActivity, "forumActivity");
 
   const handleExport = () => {
     let headers: string[] = [];
@@ -131,7 +129,7 @@ export default function Forum() {
 
       filename = "forum-posts-export.csv";
     }
-//     console.log(forumActivity, "forumActivity");
+    //     console.log(forumActivity, "forumActivity");
 
     const csv = [headers, ...rows]
       .map((row) =>
@@ -139,9 +137,9 @@ export default function Forum() {
           .map((value) =>
             typeof value === "string" && value.includes(",")
               ? `"${value}"`
-              : value
+              : value,
           )
-          .join(",")
+          .join(","),
       )
       .join("\n");
 
@@ -180,7 +178,16 @@ export default function Forum() {
                 className="pl-10"
               />
             </div>
-
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
             <Button
               variant="outline"
               onClick={handleExport}
@@ -194,7 +201,10 @@ export default function Forum() {
             </Button>
           </div>
 
-          <ForumUserComponent paginatedUsers={paginatedUsers} isPending={isPending}/>
+          <ForumUserComponent
+            paginatedUsers={paginatedUsers}
+            isPending={isPending}
+          />
 
           {(filteredUsers?.length ?? 0) > itemsPerPage && (
             <div className="flex items-center justify-between">
@@ -243,7 +253,10 @@ export default function Forum() {
             </div>
           </div>
 
-          <ForumActivityComponent paginatedPosts={paginatedPosts} isLoading={isLoading}/>
+          <ForumActivityComponent
+            paginatedPosts={paginatedPosts}
+            isLoading={isLoading}
+          />
 
           {(filteredPosts?.length ?? 0) > itemsPerPage && (
             <div className="flex items-center justify-between">

@@ -11,28 +11,84 @@ import {
   XCircle,
   Star,
   User,
+  Shield,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { PageHeader } from "@/components/page-header";
 import { formatDate, formatPhone } from "@/lib/helper";
-import { useRider } from "@/hooks/useRider";
+import { useRider, useSuspend, useUnsuspend } from "@/hooks/useRider";
 import RiderDetailSkeleton from "@/components/RiderDetailSkeleton";
 import type { Rider } from "@/lib/type";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+// import { api } from "@/lib/api";
+// import { useToast } from "@/hooks/use-toast";
 
 export default function RiderDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data:riders, isLoading } = useRider(id!);
+  const queryClient = useQueryClient();
+  // const { toast } = useToast();
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [showUnsuspendModal, setShowUnsuspendModal] = useState(false);
+
+  const { data: riders, isLoading } = useRider(id!);
+  const data: Rider | null = riders ?? null;
+
+  // Suspend mutation
+
+  const { mutate: suspendRider, isPending: isSuspending } = useSuspend("riders");
+  const { mutate: unSuspendRider, isPending: isUnsuspending } =
+    useUnsuspend("riders");
 
 
-  const data:Rider | null = riders ?? null
+  const handleSuspension = () => {
+    if (!rider?.id) return;
+    suspendRider(rider.id, {
+      onSuccess: () => {
+        toast.success("Rider Suspended");
+        setShowSuspendModal(false);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message || "Failed to suspend rider.",
+        );
+      },
+    });
+  };
+  const handleUnsuspension = () => {
+    if (!rider?.id) return;
+    unSuspendRider(rider.id, {
+      onSuccess: () => {
+        toast.success("Rider Unsuspended");
+        setShowUnsuspendModal(false);
+      },
+      onError: (error: any) => {
+        toast.error(
+          error?.response?.data?.message || "Failed to unsuspend rider.",
+        );
+      },
+    });
+  };
 
   // Find the rider by ID - adjust property names based on your actual mockData structure
   const rider = {
     ...data,
     totalRides: 12, // fake data
     completedRides: 9, // fake data
-    cancelledRides: 3,  // fake data
+    cancelledRides: 3, // fake data
     averageRating: 4.5, // fake data
   };
 
@@ -67,6 +123,8 @@ export default function RiderDetail() {
     );
   }
 
+  const isActive = rider.isActive === "1";
+
   return (
     <div className="space-y-8">
       <div>
@@ -85,8 +143,8 @@ export default function RiderDetail() {
               description={`Rider ID: ${rider.id}`}
             />
             <div className="flex items-center gap-3 mt-4">
-              <Badge variant={rider.isActive === "1" ? "default" : "secondary"}>
-                {rider.isActive === "1" ? "Active" : "Inactive"}
+              <Badge variant={isActive ? "default" : "destructive"}>
+                {isActive ? "Active" : "Suspended"}
               </Badge>
               <Badge variant="outline">{rider.gender}</Badge>
               {rider.averageRating > 0 && (
@@ -97,8 +155,61 @@ export default function RiderDetail() {
               )}
             </div>
           </div>
+
+          {/* Suspend/Unsuspend Button */}
+          <div>
+            {isActive ? (
+              <Button
+                variant="destructive"
+                onClick={() => setShowSuspendModal(true)}
+                disabled={isSuspending}
+                className="gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                {isSuspending ? "Suspending..." : "Suspend Rider"}
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                onClick={() => setShowUnsuspendModal(true)}
+                disabled={isUnsuspending}
+                className="gap-2"
+              >
+                <Shield className="h-4 w-4" />
+                {isUnsuspending
+                  ? "Unsuspending..."
+                  : "Unsuspend Rider"}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Suspension Info Card (only shown when suspended) */}
+      {!isActive && rider.suspensionReason && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" />
+              Suspension Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {rider.suspensionReason && (
+              <div>
+                <p className="text-sm text-muted-foreground">Reason</p>
+                <p className="font-medium">{rider.suspensionReason}</p>
+              </div>
+            )}
+            {rider.suspendedAt && (
+              <div>
+                <p className="text-sm text-muted-foreground">Suspended On</p>
+                <p className="font-medium">{formatDate(rider.suspendedAt)}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
@@ -130,7 +241,7 @@ export default function RiderDetail() {
                   <div>
                     <p className="text-sm text-muted-foreground">Phone</p>
                     <p className="font-medium">
-                      {formatPhone(rider.phoneNumber)}
+                      {formatPhone(rider?.phoneNumber)}
                     </p>
                   </div>
                   {rider.isPhoneVerified === "1" ? (
@@ -232,7 +343,6 @@ export default function RiderDetail() {
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <span>Recent Activity</span>
-            {/* <Badge variant="outline">Last 30 days</Badge> */}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -288,6 +398,83 @@ export default function RiderDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Suspend Confirmation Modal */}
+      <AlertDialog open={showSuspendModal} onOpenChange={setShowSuspendModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will suspend {rider.name}'s account. The rider will not be
+              able to:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Accept new ride requests</li>
+                <li>Access the rider app</li>
+                <li>Receive payments</li>
+              </ul>
+              {/* <div className="mt-4 p-3 bg-muted rounded-md">
+                <p className="text-sm font-medium">
+                  You can add a suspension reason (optional)
+                </p>
+                <textarea
+                  className="mt-2 w-full p-2 text-sm border rounded-md"
+                  rows={2}
+                  placeholder="Enter reason for suspension..."
+                  onChange={(e) => {
+                    // You can store this in state if you want to pass it to the API
+                    console.log("Suspension reason:", e.target.value);
+                  }}
+                />
+              </div> */}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSuspension}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, Suspend Rider
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Unsuspend Confirmation Modal */}
+      <AlertDialog
+        open={showUnsuspendModal}
+        onOpenChange={setShowUnsuspendModal}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reinstate Rider?</AlertDialogTitle>
+            <AlertDialogDescription>
+
+              <div>
+
+              This will reinstate {rider.name}'s account. The rider will regain:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Full access to the rider app</li>
+                <li>Ability to accept ride requests</li>
+                <li>Access to earnings and payments</li>
+              </ul>
+              <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-800">
+                <p className="text-sm flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                  <AlertTriangle className="h-4 w-4" />
+                  Ensure any issues have been resolved before reinstating.
+                </p>
+              </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUnsuspension}>
+              Yes, Reinstate Rider
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

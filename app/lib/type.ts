@@ -15,6 +15,8 @@ export interface Rider {
   completedRides: number;
   cancelledRides: number;
   averageRating: number;
+  suspendedAt: string;
+  suspensionReason: string
 }
 
 export interface Driver {
