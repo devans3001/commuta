@@ -51,3 +51,59 @@ export async function getForumActivity(): Promise<ForumActivity[]> {
 
   return data.data;
 }
+
+export async function pause(id: string | number, module: string): Promise<any> {
+  const token = localStorage.getItem("commuta_token");
+  if (!token) throw new Error("Not authenticated");
+
+  // pause/resume  hide/unhide
+  const url =
+    module === "posts" ? `posts/${id}/hide` : `forum-communities/${id}/pause`;
+
+  const response = await fetch(`${API_BASE_URL}/${url}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+    },
+    // body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.message || `Failed to pause ${module}`);
+  }
+
+  return data.data;
+}
+
+export async function resume(id: string | number, module: string): Promise<any> {
+  const token = localStorage.getItem("commuta_token");
+  if (!token) throw new Error("Not authenticated");
+
+  // pause/resume  hide/unhide
+  const url =
+    module === "posts" ? `posts/${id}/unhide` : `forum-communities/${id}/resume`;
+
+  const response = await fetch(`${API_BASE_URL}/${url}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+    },
+    // body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.message || `Failed to resume ${module}`);
+  }
+
+  return data.data;
+}

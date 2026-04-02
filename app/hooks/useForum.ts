@@ -1,6 +1,6 @@
 import type { ForumActivity, ForumUser } from "@/lib/type";
-import { getForumActivity, getForumUser } from "@/services/apiForum";
-import { useQuery } from "@tanstack/react-query";
+import { getForumActivity, getForumUser, pause } from "@/services/apiForum";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 
 export function useForumUser() {
@@ -18,4 +18,20 @@ export function useForumActivity() {
   });
 
   return { data, isLoading, error };
+}
+
+
+export function useSuspend(module: string) {
+  const queryClient = useQueryClient();
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: (id: string|number) => pause(id, module),
+    onSuccess: (data, id) => {
+      // Invalidate the specific rider query
+      queryClient.invalidateQueries({ queryKey: module === "forum-communities" ? ["forum-communities"] : ["forum-user"], });
+      // Also invalidate the riders list if needed
+      // queryClient.invalidateQueries({ queryKey: ["riders"] });
+    },
+  });
+
+  return { mutate, isPending, error };
 }
