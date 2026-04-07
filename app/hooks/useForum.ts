@@ -1,5 +1,5 @@
 import type { ForumActivity, ForumUser } from "@/lib/type";
-import { getForumActivity, getForumUser, pause } from "@/services/apiForum";
+import { getForumActivity, getForumUser, pause, resume } from "@/services/apiForum";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 
@@ -21,13 +21,27 @@ export function useForumActivity() {
 }
 
 
-export function useSuspend(module: string) {
+export function usePause(module: string) {
   const queryClient = useQueryClient();
   const { mutate, isPending, error } = useMutation({
-    mutationFn: (id: string|number) => pause(id, module),
+    mutationFn: (id: string|undefined) => pause(id, module),
     onSuccess: (data, id) => {
       // Invalidate the specific rider query
-      queryClient.invalidateQueries({ queryKey: module === "forum-communities" ? ["forum-communities"] : ["forum-user"], });
+      queryClient.invalidateQueries({ queryKey: module === "posts" ? ["forum-activity"] : ["forum-user"], });
+      // Also invalidate the riders list if needed
+      // queryClient.invalidateQueries({ queryKey: ["riders"] });
+    },
+  });
+
+  return { mutate, isPending, error };
+}
+export function useResume(module: string) {
+  const queryClient = useQueryClient();
+  const { mutate, isPending, error } = useMutation({
+    mutationFn: (id: string|undefined) => resume(id, module),
+    onSuccess: (data, id) => {
+      // Invalidate the specific rider query
+      queryClient.invalidateQueries({ queryKey: module === "posts" ? ["forum-activity"] : ["forum-user"], });
       // Also invalidate the riders list if needed
       // queryClient.invalidateQueries({ queryKey: ["riders"] });
     },

@@ -52,7 +52,7 @@ export async function getForumActivity(): Promise<ForumActivity[]> {
   return data.data;
 }
 
-export async function pause(id: string | number, module: string): Promise<any> {
+export async function pause(id: string | undefined, module: string): Promise<any> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
@@ -80,7 +80,7 @@ export async function pause(id: string | number, module: string): Promise<any> {
   return data.data;
 }
 
-export async function resume(id: string | number, module: string): Promise<any> {
+export async function resume(id: string | undefined, module: string): Promise<any> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 

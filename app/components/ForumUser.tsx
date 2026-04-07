@@ -39,7 +39,7 @@ function ForumUserComponent({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User ID</TableHead>
+              <TableHead></TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Status</TableHead>
@@ -117,7 +117,7 @@ function TableBodyContent({
   // console.log(typeof id,"id")
   return (
     <>
-      <TableRow key={user?.userId}>
+      <TableRow>
         <TableCell>
           <Badge variant="outline">{num + 1}</Badge>
         </TableCell>

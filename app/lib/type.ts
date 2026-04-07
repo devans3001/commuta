@@ -95,6 +95,7 @@ export interface ForumActivity {
   authorName: string;
   createdAt: string;
   updatedAt: string;
+  isHidden: boolean;
 }
 
 export interface PayoutDriver {

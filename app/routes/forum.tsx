@@ -23,12 +23,14 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import ForumUserComponent from "@/components/ForumUser";
 import ForumActivityComponent from "@/components/ForumActivity";
+import Community from "@/components/Community";
 
 export default function Forum() {
   const [activeTab, setActiveTab] = useState("users");
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [status, setStatus] = useState("all");
+  const [userStatus, setUserStatus] = useState("all");
+  const [postStatus, setPostStatus] = useState("all");
   const [userPage, setUserPage] = useState(1);
   const [postPage, setPostPage] = useState(1);
   const itemsPerPage = 10;
@@ -43,23 +45,27 @@ export default function Forum() {
         user.emailAddress.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
-        status === "all" ||
-        (status === "active" && user.isActive) ||
-        (status === "inactive" && !user.isActive);
+        userStatus === "all" ||
+        (userStatus === "active" && user.isActive) ||
+        (userStatus === "inactive" && !user.isActive);
 
       return matchesSearch && matchesStatus;
     }).sort((a,b)=>(a.name.localeCompare(b.name)));
-  }, [searchQuery, status, forumUser]);
-
+  }, [searchQuery, userStatus, forumUser]);
   const filteredPosts = useMemo(() => {
     return forumActivity?.filter((post) => {
       const matchesSearch =
         post.postTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
         post.authorName.toLowerCase().includes(searchQuery.toLowerCase());
 
-      return matchesSearch;
+         const matchesStatus =
+        postStatus === "all" ||
+        (postStatus === "active" && post.isHidden) ||
+        (postStatus === "inactive" && !post.isHidden);
+
+      return matchesSearch && matchesStatus;
     });
-  }, [searchQuery, forumActivity]);
+  }, [searchQuery, postStatus, forumActivity]);
 
   const paginatedUsers = filteredUsers?.slice(
     (userPage - 1) * itemsPerPage,
@@ -162,6 +168,7 @@ export default function Forum() {
         <TabsList>
           <TabsTrigger value="users">Forum Users</TabsTrigger>
           <TabsTrigger value="posts">Posts & Activity</TabsTrigger>
+          {/* <TabsTrigger value="communities">Communities</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
@@ -178,7 +185,7 @@ export default function Forum() {
                 className="pl-10"
               />
             </div>
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={userStatus} onValueChange={setUserStatus}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -251,6 +258,17 @@ export default function Forum() {
                 className="pl-10"
               />
             </div>
+
+            <Select value={postStatus} onValueChange={setPostStatus}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="active">Hidden</SelectItem>
+                <SelectItem value="inactive">Visible</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <ForumActivityComponent
@@ -288,6 +306,10 @@ export default function Forum() {
             </div>
           )}
         </TabsContent>
+
+        {/* <TabsContent value="communities" className="space-y-6">
+          <Community data={forumActivity}/>
+        </TabsContent> */}
       </Tabs>
     </div>
   );
