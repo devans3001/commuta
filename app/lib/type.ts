@@ -81,6 +81,17 @@ export interface ForumUser {
   createdAt: string;
   verifiedAt: string | null;
 }
+export interface ForumCommunity {
+  communityId: string;
+  communityName: string;
+  communityDesc: string;
+  communityThumbnail: string;
+  memberCount: string;
+  postCount: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string | null;
+}
 
 export interface ForumActivity {
   id: string;

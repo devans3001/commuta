@@ -1,12 +1,12 @@
-import type { ForumActivity, ForumUser } from "@/lib/type";
+import type { ForumActivity, ForumCommunity, ForumUser } from "@/lib/type";
 import { API_BASE_URL } from "./apiAuth";
 
-export async function getForumUser(): Promise<ForumUser[]> {
+export async function getForumUserCommunity(value:string): Promise<ForumUser[] | ForumCommunity[]> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/forum-users`, {
+    const response = await fetch(`${API_BASE_URL}/${value === "users" ? "forum-users" : "forum-communities"}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -103,6 +103,34 @@ export async function resume(id: string | undefined, module: string): Promise<an
 
   if (!response.ok) {
     throw new Error(data?.message || `Failed to resume ${module}`);
+  }
+
+  return data.data;
+}
+
+export async function deleteCommunity(id: string): Promise<any> {
+  const token = localStorage.getItem("commuta_token");
+  if (!token) throw new Error("Not authenticated");
+
+  // pause/resume  hide/unhide
+  const url =
+   `forum-communities/${id}/delete`;
+
+  const response = await fetch(`${API_BASE_URL}/${url}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+    },
+    // body: JSON.stringify(payload),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.message || `Failed to delete community`);
   }
 
   return data.data;

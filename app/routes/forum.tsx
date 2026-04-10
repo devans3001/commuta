@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useMemo } from "react";
-import { useForumActivity, useForumUser } from "@/hooks/useForum";
+import { useForumActivity, useForumCommunity, useForumUser } from "@/hooks/useForum";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import ForumUserComponent from "@/components/ForumUser";
@@ -35,8 +35,9 @@ export default function Forum() {
   const [postPage, setPostPage] = useState(1);
   const itemsPerPage = 10;
 
-  const { data: forumUser, isLoading: isPending } = useForumUser();
+  const { data: forumUser, isLoading: isPending } = useForumUser("users");
   const { data: forumActivity, isLoading } = useForumActivity();
+  const { data: forumCommunity, isLoading:isRotating } = useForumCommunity("communities");
 
   const filteredUsers = useMemo(() => {
     return forumUser?.filter((user) => {
@@ -52,6 +53,7 @@ export default function Forum() {
       return matchesSearch && matchesStatus;
     }).sort((a,b)=>(a.name.localeCompare(b.name)));
   }, [searchQuery, userStatus, forumUser]);
+  
   const filteredPosts = useMemo(() => {
     return forumActivity?.filter((post) => {
       const matchesSearch =
@@ -168,7 +170,7 @@ export default function Forum() {
         <TabsList>
           <TabsTrigger value="users">Forum Users</TabsTrigger>
           <TabsTrigger value="posts">Posts & Activity</TabsTrigger>
-          {/* <TabsTrigger value="communities">Communities</TabsTrigger> */}
+          <TabsTrigger value="communities">Communities</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="space-y-6">
@@ -307,9 +309,9 @@ export default function Forum() {
           )}
         </TabsContent>
 
-        {/* <TabsContent value="communities" className="space-y-6">
-          <Community data={forumActivity}/>
-        </TabsContent> */}
+        <TabsContent value="communities" className="space-y-6">
+          <Community paginatedCommunities={forumCommunity} isLoading={isRotating}/>
+        </TabsContent>
       </Tabs>
     </div>
   );
