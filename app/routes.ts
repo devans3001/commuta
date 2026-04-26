@@ -16,6 +16,8 @@ export default [
     route("admin/drivers/:id", "routes/drivers-details.tsx"),
     route("admin/trips", "routes/trips.tsx"),
     route("admin/trips/:rideId", "routes/trip-details.tsx"),
+    route("admin/drivers-verifications", "routes/drivers-verification.tsx"),
+    route("admin/drivers-verifications/:id", "routes/drivers-verification-details.tsx"),
     route("admin/forum", "routes/forum.tsx"),
     route("admin/payouts", "routes/payouts.tsx"),
     route("admin/contacts", "routes/contacts.tsx"),

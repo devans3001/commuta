@@ -30,6 +30,7 @@ const mainItems = [
   { title: "Riders", url: "/admin/riders", icon: Users },
   { title: "Drivers", url: "/admin/drivers", icon: UserCircle },
   { title: "Trip Log", url: "/admin/trips", icon: Car },
+  { title: "Driver Verifications", url: "/admin/drivers-verifications", icon: UserCircle },
   { title: "Driver Payouts", url: "/admin/payouts", icon: DollarSign },
   { title: "Forum Activity", url: "/admin/forum", icon: MessageSquare },
   { title: "Contacts", url: "/admin/contacts", icon: Contact },
