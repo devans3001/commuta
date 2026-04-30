@@ -1,6 +1,6 @@
 import type { Driver, Trip as Trips } from "@/lib/type";
 import { API_BASE_URL } from "@/services/apiAuth";
-import { fetchDriverById, fetchDrivers, fetchTripById, fetchTrips } from "@/services/apiDrivers";
+import { fetchDriverById, fetchDrivers, fetchTripById, fetchTrips, suspend_unsuspend } from "@/services/apiDrivers";
 import { fetchRiderById, fetchRiders } from "@/services/apiRiders";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -40,28 +40,12 @@ export function useTrip(id:string) {
   return { data, isLoading, error };
 }
 
-// "data": {
-//         "id": "1",
-//         "driverId": "9",
-//         "idType": "PASSPORT",
-//         "selfie": "https://api.gocommuta.com/public/uploads/driver-verification/selfie_9_1777030641_69eb55f11b098.jpg",
-//         "idCardFront": "https://api.gocommuta.com/public/uploads/driver-verification/id_front_9_1777030641_69eb55f11c09a.jpg",
-//         "idCardBack": "https://api.gocommuta.com/public/uploads/driver-verification/id_back_9_1777030641_69eb55f11cda7.jpg",
-//         "status": "PENDING",
-//         "rejectionReason": null,
-//         "rejectedAt": null,
-//         "createdAt": "2026-04-24 12:37:21",
-//         "updatedAt": "2026-04-24 12:37:21",
-//         "driverName": "jesse",
-//         "driverEmail": "litttlejaay@gmail.com"
-//     }
-// }
 
 export interface DriverVerification {
   id: string;
   driverId: string;
   idType: string;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+  status: "PENDING" | "APPROVED" | "REJECTED";
   rejectionReason: string | null;
   rejectedAt: string | null;
   createdAt: string;
@@ -96,7 +80,7 @@ interface VerificationsResponse {
 
 interface UpdateStatusPayload {
   verificationId: number;
-  status: "APPROVED" | "REJECTED" | "SUSPENDED" | "REINSTATED";
+  status: "APPROVED" | "REJECTED";
   reason?: string;
 }
 
@@ -176,7 +160,7 @@ export function useDriverVerificationById(id: string) {
   });
 }
 
-/** Update verification status (approve / reject / SUSPENDED / reinstate) */
+/** Update verification status (approve / reject ) */
 export function useUpdateVerificationStatus() {
   const queryClient = useQueryClient();
 
@@ -205,6 +189,19 @@ export function useUpdateVerificationStatus() {
       queryClient.invalidateQueries({ queryKey: ["driver-verifications"] });
       queryClient.invalidateQueries({
         queryKey: ["driver-verifications", variables.verificationId],
+      });
+    },
+  });
+}
+export function useSuspendUnsuspendDriver(id:string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ driverId, status }:{ driverId: number; status: "suspend" | "unsuspend" }) => suspend_unsuspend({ driverId, status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["driver-verifications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["driver", id],
       });
     },
   });

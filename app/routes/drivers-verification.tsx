@@ -25,7 +25,7 @@ import { useNavigate } from "react-router";
 import { useDriverVerifications } from "@/hooks/useDriver";
 import { RidersTableSkeleton } from "@/components/RidersTableSkeleton";
 
-type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
+type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED" ;
 
 interface DriverVerification {
   id: string;
@@ -59,10 +59,10 @@ const STATUS_CONFIG: Record<
     label: "Rejected",
     className: "bg-red-100 text-red-800 hover:bg-red-100",
   },
-  SUSPENDED: {
-    label: "SUSPENDED",
-    className: "bg-slate-100 text-slate-700 hover:bg-slate-100",
-  },
+  // SUSPENDED: {
+  //   label: "SUSPENDED",
+  //   className: "bg-slate-100 text-slate-700 hover:bg-slate-100",
+  // },
 };
 
 
@@ -91,7 +91,7 @@ export default function DriverVerifications() {
 
   // Summary counts
   const counts = useMemo(() => {
-    const base = { PENDING: 0, APPROVED: 0, REJECTED: 0, SUSPENDED: 0 };
+    const base = { PENDING: 0, APPROVED: 0, REJECTED: 0 };
     verifications.forEach((v) => {
       base[v.status] = (base[v.status] || 0) + 1;
     });
@@ -158,7 +158,7 @@ export default function DriverVerifications() {
             <SelectItem value="PENDING">Pending</SelectItem>
             <SelectItem value="APPROVED">Approved</SelectItem>
             <SelectItem value="REJECTED">Rejected</SelectItem>
-            <SelectItem value="SUSPENDED">SUSPENDED</SelectItem>
+            {/* <SelectItem value="SUSPENDED">SUSPENDED</SelectItem> */}
           </SelectContent>
         </Select>
       </div>
@@ -203,7 +203,7 @@ export default function DriverVerifications() {
                     };
                     return (
                       <TableRow key={v.id} className="hover:bg-muted/50">
-                        <TableCell className="font-medium">{v.driverName}</TableCell>
+                        <TableCell className="font-medium capitalize">{v.driverName}</TableCell>
                         <TableCell className="hidden md:table-cell text-muted-foreground">
                           {v.driverEmail}
                         </TableCell>

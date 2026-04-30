@@ -28,7 +28,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import { useDriverVerificationById, useUpdateVerificationStatus } from "@/hooks/useDriver";
+import {
+  useDriverVerificationById,
+  useUpdateVerificationStatus,
+} from "@/hooks/useDriver";
 import { toast } from "sonner";
 
 type VerificationStatus = "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED";
@@ -249,11 +252,11 @@ export default function DriverVerificationDetail() {
         onError: () => {
           toast.error("Failed to update status. Please try again.");
         },
-      }
+      },
     );
   };
 
-  console.log("Verification Data:", activeAction,verification?.id);
+  console.log("Verification Data:", activeAction, verification?.id);
   const status = verification?.status as VerificationStatus | undefined;
   const statusCfg = status ? STATUS_CONFIG[status] : null;
 
@@ -326,7 +329,7 @@ export default function DriverVerificationDetail() {
                     Submitted:{" "}
                     {format(
                       parseISO(verification?.createdAt),
-                      "dd MMM yyyy, HH:mm"
+                      "dd MMM yyyy, HH:mm",
                     )}
                   </span>
                 </div>
@@ -375,60 +378,39 @@ export default function DriverVerificationDetail() {
           </Card>
 
           {/* Admin Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Admin Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                {/* Approve — show when PENDING or REJECTED */}
-                {(status === "PENDING" || status === "REJECTED") && (
-                  <Button
-                    className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
-                    onClick={() => handleAction("APPROVED")}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve
-                  </Button>
-                )}
+          {status === "PENDING" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Admin Actions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  {/* Approve — show when PENDING or REJECTED */}
+                  {(status === "PENDING" || status === "REJECTED") && (
+                    <Button
+                      className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                      onClick={() => handleAction("APPROVED")}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                  )}
 
-                {/* Reject — show when PENDING or APPROVED */}
-                {(status === "PENDING") && (
-                  <Button
-                    variant="destructive"
-                    className="cursor-pointer"
-                    onClick={() => handleAction("REJECTED")}
-                  >
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                )}
-
-                {/* SUSPENDED — show when APPROVED */}
-                {status === "APPROVED" && (
-                  <Button
-                    variant="outline"
-                    className="border-slate-400 text-slate-700 cursor-pointer"
-                    onClick={() => handleAction("SUSPENDED")}
-                  >
-                    <ShieldOff className="h-4 w-4 mr-2" />
-                    SUSPENDED
-                  </Button>
-                )}
-
-                {/* Reinstate — show when SUSPENDED */}
-                {status === "SUSPENDED" && (
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
-                    onClick={() => handleAction("REINSTATED")}
-                  >
-                    <ShieldCheck className="h-4 w-4 mr-2" />
-                    Reinstate
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  {/* Reject — show when PENDING or APPROVED */}
+                  {status === "PENDING" && (
+                    <Button
+                      variant="destructive"
+                      className="cursor-pointer"
+                      onClick={() => handleAction("REJECTED")}
+                    >
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
 

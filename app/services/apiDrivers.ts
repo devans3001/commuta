@@ -98,3 +98,39 @@ const data = await response.json();
 
   return data.data;
 }
+
+// https://api.gocommuta.com/v1/admin/drivers/unsuspend
+
+export async function suspend_unsuspend({
+  driverId,
+  status,
+}: {
+  driverId: number;
+  status: "suspend" | "unsuspend";
+}): Promise<any[]> {
+  const token = localStorage.getItem("commuta_token");
+  if (!token) throw new Error("Not authenticated");
+
+
+  const response = await fetch(`${API_BASE_URL}/drivers/${status}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+    },
+
+    body: JSON.stringify({
+      driverId,
+    }),
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => null);
+    throw new Error(err?.message || "Failed to suspend/unsuspend driver");
+  }
+
+  return data.data;
+}

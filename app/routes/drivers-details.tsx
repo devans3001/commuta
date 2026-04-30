@@ -2,16 +2,16 @@ import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  Phone, 
-  Mail, 
-  Car, 
-  Calendar, 
-  MapPin, 
-  CheckCircle, 
-  XCircle, 
-  Wifi, 
+import {
+  ArrowLeft,
+  Phone,
+  Mail,
+  Car,
+  Calendar,
+  MapPin,
+  CheckCircle,
+  XCircle,
+  Wifi,
   WifiOff,
   UserCheck,
   UserX,
@@ -19,48 +19,54 @@ import {
   Building,
   Star,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Loader2,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { formatDate, formatPhone } from "@/lib/helper";
-import { useDriver } from "@/hooks/useDriver";
+import { useDriver, useSuspendUnsuspendDriver } from "@/hooks/useDriver";
 import RiderDetailSkeleton from "@/components/RiderDetailSkeleton";
 import type { Driver } from "@/lib/type";
 
 export default function DriverDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
-  const {data:driverData,isLoading} = useDriver(String(id))
+
+  const { data: driverData, isLoading } = useDriver(String(id));
+
+  const { mutate, isPending } = useSuspendUnsuspendDriver(String(id));
   // Find the driver by ID from mockData
 
-  const data:Driver | null = driverData ?? null
+  const data: Driver | null = driverData ?? null;
 
-  const driver =  {
+  const driver = {
     ...data,
     totalRides: 12, // fake data
     completedRides: 9, // fake data
-    cancelledRides: 3,  // fake data
+    cancelledRides: 3, // fake data
     averageRating: 4.5, // fake data
-    totalEarnings: 250000 // fake data
+    totalEarnings: 250000, // fake data
   };
 
-    if (isLoading) {
-      return <RiderDetailSkeleton val="Drivers"/>;
-    }
-
+  if (isLoading) {
+    return <RiderDetailSkeleton val="Drivers" />;
+  }
 
   if (!driver) {
     return (
       <div className="space-y-8">
         <div>
-          <Button variant="ghost" onClick={() => navigate("/admin/drivers")} className="mb-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/admin/drivers")}
+            className="mb-4"
+          >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Drivers
           </Button>
-          <PageHeader 
-            title="Driver Not Found" 
-            description={`No driver found with ID: ${id}`} 
+          <PageHeader
+            title="Driver Not Found"
+            description={`No driver found with ID: ${id}`}
           />
         </div>
       </div>
@@ -68,49 +74,72 @@ export default function DriverDetail() {
   }
 
   // Calculate completion rate
-  const completionRate = driver.totalRides > 0 
-    ? Math.round((driver.completedRides / driver.totalRides) * 100) 
-    : 0;
+  const completionRate =
+    driver.totalRides > 0
+      ? Math.round((driver.completedRides / driver.totalRides) * 100)
+      : 0;
 
   // Calculate cancellation rate
-  const cancellationRate = driver.totalRides > 0 
-    ? Math.round((driver.cancelledRides / driver.totalRides) * 100) 
-    : 0;
+  const cancellationRate =
+    driver.totalRides > 0
+      ? Math.round((driver.cancelledRides / driver.totalRides) * 100)
+      : 0;
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <Button variant="ghost" onClick={() => navigate("/admin/drivers")} className="mb-4 cursor-pointer">
+        <Button
+          variant="ghost"
+          onClick={() => navigate("/admin/drivers")}
+          className="mb-4 cursor-pointer"
+        >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Drivers
         </Button>
         <div className="flex items-start justify-between">
           <div>
-            <PageHeader title={driver.name} description={`Driver ID: ${driver.id}`} />
+            <PageHeader
+              title={driver.name}
+              description={`Driver ID: ${driver.id}`}
+            />
             <div className="flex flex-wrap items-center gap-3 mt-4">
-              <Badge variant={driver.isActive === "1" ? "default" : "secondary"}>
+              <Badge
+                variant={driver.isActive === "1" ? "default" : "secondary"}
+              >
                 {driver.isActive === "1" ? "Active" : "Inactive"}
               </Badge>
               {driver.isOnline === "1" ? (
-                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                <Badge
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-200"
+                >
                   <Wifi className="h-3 w-3 mr-1" />
                   Online
                 </Badge>
               ) : (
-                <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                <Badge
+                  variant="outline"
+                  className="bg-gray-50 text-gray-700 border-gray-200"
+                >
                   <WifiOff className="h-3 w-3 mr-1" />
                   Offline
                 </Badge>
               )}
               <Badge variant="outline">{driver.gender}</Badge>
               {driver.isAvailable === "1" ? (
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                <Badge
+                  variant="outline"
+                  className="bg-blue-50 text-blue-700 border-blue-200"
+                >
                   <UserCheck className="h-3 w-3 mr-1" />
                   Available
                 </Badge>
               ) : (
-                <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                <Badge
+                  variant="outline"
+                  className="bg-orange-50 text-orange-700 border-orange-200"
+                >
                   <UserX className="h-3 w-3 mr-1" />
                   Unavailable
                 </Badge>
@@ -118,11 +147,60 @@ export default function DriverDetail() {
               {driver.averageRating > 0 && (
                 <div className="flex items-center gap-1 text-amber-500 bg-amber-50 px-2 py-1 rounded-full">
                   <Star className="h-3.5 w-3.5 fill-current" />
-                  <span className="font-semibold text-sm">{driver.averageRating}</span>
+                  <span className="font-semibold text-sm">
+                    {driver.averageRating}
+                  </span>
                 </div>
               )}
             </div>
           </div>
+          {driver.isActive === "1" ? (
+            <Button
+              variant="destructive"
+              size="default"
+              disabled={isPending}
+              onClick={() => {
+                // Add your suspend logic here
+                // console.log("Suspend driver:", driver.id);
+                if (driver.id) {
+                  mutate({ driverId: parseInt(driver.id), status: "suspend" });
+                }
+              }}
+              className="cursor-pointer"
+            >
+              {isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <>
+                  <UserX className="h-4 w-4 mr-2" />
+                  Suspend Driver
+                </>
+              )}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              disabled={isPending}
+              size="default"
+              onClick={() => {
+                // Add your reactivate logic here
+                if (driver.id) {
+                  mutate({ driverId: parseInt(driver.id), status: "unsuspend" });
+                }
+                // console.log("Reactivate driver:", driver.id);
+              }}
+              className="cursor-pointer border-green-500 text-green-600 hover:bg-green-50"
+            >
+              {isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <>
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Reactivate
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -141,7 +219,9 @@ export default function DriverDetail() {
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{formatPhone(driver?.phoneNumber)}</p>
+                    <p className="font-medium">
+                      {formatPhone(driver?.phoneNumber)}
+                    </p>
                   </div>
                 </div>
                 {driver.isPhoneVerified === "1" ? (
@@ -229,27 +309,35 @@ export default function DriverDetail() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center p-3 bg-primary/5 rounded-lg">
-                  <p className="text-2xl font-bold text-primary">{driver.totalRides}</p>
+                  <p className="text-2xl font-bold text-primary">
+                    {driver.totalRides}
+                  </p>
                   <p className="text-xs text-muted-foreground">Total Rides</p>
                 </div>
                 <div className="text-center p-3 bg-green-50 rounded-lg">
-                  <p className="text-2xl font-bold text-green-600">{driver.completedRides}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {driver.completedRides}
+                  </p>
                   <p className="text-xs text-muted-foreground">Completed</p>
                 </div>
                 <div className="text-center p-3 bg-red-50 rounded-lg">
-                  <p className="text-2xl font-bold text-red-600">{driver.cancelledRides}</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {driver.cancelledRides}
+                  </p>
                   <p className="text-xs text-muted-foreground">Cancelled</p>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <p className="text-sm text-muted-foreground">Completion Rate</p>
+                  <p className="text-sm text-muted-foreground">
+                    Completion Rate
+                  </p>
                   <p className="text-sm font-medium">{completionRate}%</p>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-green-500 rounded-full" 
+                  <div
+                    className="h-full bg-green-500 rounded-full"
                     style={{ width: `${completionRate}%` }}
                   />
                 </div>
@@ -257,12 +345,14 @@ export default function DriverDetail() {
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <p className="text-sm text-muted-foreground">Cancellation Rate</p>
+                  <p className="text-sm text-muted-foreground">
+                    Cancellation Rate
+                  </p>
                   <p className="text-sm font-medium">{cancellationRate}%</p>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-red-500 rounded-full" 
+                  <div
+                    className="h-full bg-red-500 rounded-full"
                     style={{ width: `${cancellationRate}%` }}
                   />
                 </div>
@@ -279,7 +369,9 @@ export default function DriverDetail() {
               <div className="text-center p-4 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <DollarSign className="h-5 w-5 text-primary" />
-                  <p className="text-sm text-muted-foreground">Total Earnings</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Earnings
+                  </p>
                 </div>
                 <p className="text-3xl font-bold text-primary">
                   ₦{driver.totalEarnings.toLocaleString()}
@@ -295,11 +387,15 @@ export default function DriverDetail() {
                     <Star className="h-5 w-5 text-amber-500 fill-current" />
                     <div>
                       <p className="font-medium">Average Rating</p>
-                      <p className="text-sm text-muted-foreground">Based on customer reviews</p>
+                      <p className="text-sm text-muted-foreground">
+                        Based on customer reviews
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-amber-600">{driver.averageRating}</p>
+                    <p className="text-2xl font-bold text-amber-600">
+                      {driver.averageRating}
+                    </p>
                     <p className="text-xs text-muted-foreground">out of 5</p>
                   </div>
                 </div>
@@ -311,7 +407,9 @@ export default function DriverDetail() {
                   <p className="font-medium">{formatDate(driver.updatedAt)}</p>
                 </div>
                 <div className="p-3 bg-muted/30 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Account Created</p>
+                  <p className="text-sm text-muted-foreground">
+                    Account Created
+                  </p>
                   <p className="font-medium">{formatDate(driver.createdAt)}</p>
                 </div>
               </div>
