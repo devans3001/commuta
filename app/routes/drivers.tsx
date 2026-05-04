@@ -31,6 +31,9 @@ export default function Drivers() {
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
   const [selectedPeriod, setSelectedPeriod] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">(
+      "all"
+    );
   const [currentPage, setCurrentPage] = useState(1);
 
   const {data, isLoading} = useDrivers()
@@ -52,6 +55,15 @@ export default function Drivers() {
       );
     }
 
+    // 🔥 Filter by status
+    if (statusFilter !== "all") {
+      result = result.filter(
+        (driver) =>
+          (statusFilter === "active" && driver.isActive === "1") ||
+          (statusFilter === "inactive" && driver.isActive !== "1")
+      );
+    }
+
     result = result.filter(
       (driver) =>
         driver.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,7 +72,7 @@ export default function Drivers() {
     );
 
     return result;
-  }, [searchQuery, selectedPeriod,data]);
+  }, [searchQuery, selectedPeriod,data,statusFilter]);
 
   const totalPages = Math.ceil(filteredDrivers?.length / itemsPerPage);
   const paginatedDrivers = filteredDrivers?.slice(
@@ -158,8 +170,19 @@ export default function Drivers() {
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="all">All Period</SelectItem>
               <SelectItem value="24">Last 24 hours</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[120px]">
+              <SelectValue placeholder="Select status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
           <Button

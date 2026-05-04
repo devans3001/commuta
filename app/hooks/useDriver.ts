@@ -197,7 +197,7 @@ export function useSuspendUnsuspendDriver(id:string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ driverId, status }:{ driverId: number; status: "suspend" | "unsuspend" }) => suspend_unsuspend({ driverId, status }),
+    mutationFn: ({ driverId, status,reason }:{ driverId: number; status: "suspend" | "unsuspend"; reason?: string }) => suspend_unsuspend({ driverId, status, reason  }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["driver-verifications"] });
       queryClient.invalidateQueries({

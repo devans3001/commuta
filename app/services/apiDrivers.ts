@@ -104,9 +104,11 @@ const data = await response.json();
 export async function suspend_unsuspend({
   driverId,
   status,
+  reason
 }: {
   driverId: number;
   status: "suspend" | "unsuspend";
+  reason?:string
 }): Promise<any[]> {
   const token = localStorage.getItem("commuta_token");
   if (!token) throw new Error("Not authenticated");
@@ -123,6 +125,7 @@ export async function suspend_unsuspend({
 
     body: JSON.stringify({
       driverId,
+      suspensionReason:reason
     }),
   });
   const data = await response.json();
